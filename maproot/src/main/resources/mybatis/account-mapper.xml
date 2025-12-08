@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="account">
+
+	<!-- 회원가입 -->
+	<insert id="insert">
+		insert into account(
+			account_id, account_pw, account_nickname, 
+			account_birth, account_contact, account_email, 
+			account_gender
+			) 
+		values(
+			#{accountId}, #{accountPw}, #{accountNickname}, 
+			#{accountBirth}, #{accountContact}, #{accountEmail}, 
+			#{accountGender}
+			)
+	</insert>
+	
+	<!-- 회원의 로그인 시간 업데이트 -->
+	<update id="updateLoginTime">
+		update account 
+		set 
+		account_login = systimestamp 
+		where account_id = #{accountId}
+	</update>
+	
+	<!-- 회원 정보 업데이트(PUT) -->
+	<update id="update">
+		update account 
+			set 
+			account_nickname = #{accountNickname}, account_email = #{accountEmail}, 
+			account_change = systimestamp
+		where account_id = #{accountId}
+	</update>
+	
+	<!-- 회원 정보 업데이트(PATCH) -->
+	<update id="updatePw">
+		update account
+			set 
+			account_pw = #{accountPw}, account_change = systimestamp 
+		where account_id = #{accountId}
+	</update>
+	
+	<update id="updateContact">
+		update account 
+			set 
+			account_contact = #{accountContact}, account_change = systimestamp
+		where account_id = #{accountId}
+	</update>
+	
+	<!-- 회원 삭제 -->
+	<delete id="delete">
+		delete account where account_id = #{accountId}
+	</delete>
+	
+
+</mapper>
