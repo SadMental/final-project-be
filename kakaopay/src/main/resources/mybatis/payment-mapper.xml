@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="payment">
+	
+	<select id="sequence" resultType="long">
+		select payment_seq.nextval from dual
+	</select>
+	<insert id="insert">
+		insert into payment(
+			payment_no, payment_owner, payment_tid,
+			payment_name, payment_total, payment_remain
+		)
+		values(
+			#{paymentNo}, #{paymentOwner}, #{paymentTid},
+			#{paymentName}, #{paymentTotal}, #{paymentRemain}
+		)
+	</insert>
+	
+	<select id="listByOwner" resultType="PaymentDto">
+		select * from payment 
+		where payment_owner = #{loginId}
+		order by payment_no desc
+	</select>
+	<select id="detail" resultType="PaymentDto">
+		select * from payment where payment_no = #{paymentNo}
+	</select>
+	
+	<update id="cancelAll">
+		update payment 
+		set payment_remain=0
+		where payment_no = #{paymentNo}
+	</update>
+	<update id="cancelUnit">
+		update payment 
+		set payment_remain=#{paymentRemain}
+		where payment_no = #{paymentNo}
+	</update>
+	
+</mapper>

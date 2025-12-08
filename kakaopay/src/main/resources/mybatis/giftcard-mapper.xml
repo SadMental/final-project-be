@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="giftcard">
+	
+	<select id="list" resultType="GiftcardDto">
+		select * from giftcard 
+		<if test="giftcardNo != null">
+			where giftcard_no = #{giftcardNo}
+		</if>
+		<if test="giftcardNo == null">
+			order by giftcard_price asc, giftcard_point desc
+		</if>
+	</select>
+	
+</mapper>
