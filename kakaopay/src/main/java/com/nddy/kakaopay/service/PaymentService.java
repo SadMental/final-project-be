@@ -7,9 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.nddy.kakaopay.dao.GiftcardDao;
+import com.nddy.kakaopay.dao.KakaoPayDao;
 import com.nddy.kakaopay.dao.PaymentDao;
 import com.nddy.kakaopay.dao.PaymentDetailDao;
 import com.nddy.kakaopay.dto.GiftcardDto;
+import com.nddy.kakaopay.dto.KakaoPayDto;
 import com.nddy.kakaopay.dto.PaymentDetailDto;
 import com.nddy.kakaopay.dto.PaymentDto;
 import com.nddy.kakaopay.vo.kakaopay.KakaoPayApproveResponseVO;
@@ -28,6 +30,8 @@ public class PaymentService {
 	private PaymentDetailDao paymentDetailDao;
 	@Autowired
 	private GiftcardDao giftcardDao;
+	@Autowired
+	private KakaoPayDao kakaoPayDao;
 
 	@Transactional
 	public void insert(KakaoPayApproveResponseVO responseVO,
@@ -52,23 +56,46 @@ public class PaymentService {
 			.paymentDetailQty(qtyVO.getQty()) .build()); 
 		}
 		
-		long addPoint = 0L;
+		long gap = 0L;
 		List<PaymentDetailDto> purchaseList = paymentDetailDao.selectList(paymentNo);
 		for (PaymentDetailDto paymentDetailDto : purchaseList) 
 		{
 			GiftcardDto giftcardDto = giftcardDao.selectOne(paymentDetailDto.getPaymentDetailItemNo());
-			addPoint += (giftcardDto.getGiftcardPoint() * paymentDetailDto.getPaymentDetailQty());
+			gap += (giftcardDto.getGiftcardPoint() * paymentDetailDto.getPaymentDetailQty());
 		}
 		
-		log.debug("addPoint : " + addPoint);
+		long origin = kakaoPayDao.origin();
+		long result = origin + gap;
 		
-		// "update member set member_point = member_point +" + addPoint + " where member_id = " + responseVO.getPartnerUserId();
+		kakaoPayDao.update(KakaoPayDto.builder()
+				.kakaopayValue(result)
+				.kakaopayOwner("nodvic")
+				.build());
 	}
 
 	@Transactional
 	public void cancel(long paymentNo) {
 		paymentDao.cancelAll(paymentNo);
 		paymentDetailDao.cancelAll(paymentNo);
+		
+		long gap = 0L;
+		List<PaymentDetailDto> purchaseList = paymentDetailDao.selectList(paymentNo);
+		for (PaymentDetailDto paymentDetailDto : purchaseList) 
+		{
+			if (!paymentDetailDto.getPaymentDetailStatus().equals("취소")) 
+			{				
+				GiftcardDto giftcardDto = giftcardDao.selectOne(paymentDetailDto.getPaymentDetailItemNo());
+				gap += (giftcardDto.getGiftcardPoint() * paymentDetailDto.getPaymentDetailQty());
+			}
+		}
+		
+		long origin = kakaoPayDao.origin();
+		long result = origin - gap;
+		
+		kakaoPayDao.update(KakaoPayDto.builder()
+				.kakaopayValue(result)
+				.kakaopayOwner("nodvic")
+				.build());
 	}
 
 	@Transactional
@@ -76,6 +103,18 @@ public class PaymentService {
 		paymentDao.cancelUnit(paymentDetailDto.getPaymentDetailOrigin(),
 				responseVO.getCancelAvailableAmount().getTotal());
 		paymentDetailDao.cancelUnit(paymentDetailDto);
+		
+		long gap = 0L;
+		GiftcardDto giftcardDto = giftcardDao.selectOne(paymentDetailDto.getPaymentDetailItemNo());
+		gap += (giftcardDto.getGiftcardPoint() * paymentDetailDto.getPaymentDetailQty());
+			
+		long origin = kakaoPayDao.origin();
+		long result = origin - gap;
+		
+		kakaoPayDao.update(KakaoPayDto.builder()
+				.kakaopayValue(result)
+				.kakaopayOwner("nodvic")
+				.build());
 	}
 
 }
