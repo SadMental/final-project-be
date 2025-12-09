@@ -27,10 +27,6 @@
 		select count(*) from account where account_nickname = #{accountNickname}
 	</select>
 	
-	<select id="countByAccountEmail" resultType="int">
-		select count(*) from account where account_email = #{accountEmail}
-	</select>
-	
 	<select id="countByAccountContact" resultType="int">
 		select count(*) from account where account_contact = #{accountContact}
 	</select>

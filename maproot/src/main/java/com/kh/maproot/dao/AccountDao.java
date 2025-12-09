@@ -21,17 +21,14 @@ public class AccountDao {
 		sqlSession.insert("account.insert", accountDto);
 	}
 	// 중복검사
-	public int countById(String accountId) {
-		return sqlSession.selectOne("account.countById", accountId);
+	public int countByAccountId(String accountId) {
+		return sqlSession.selectOne("account.countByAccountId", accountId);
 	}
-	public int countByNickname(String accountNickname) {
-		return sqlSession.selectOne("account.countByNickname", accountNickname);
+	public int countByAccountNickname(String accountNickname) {
+		return sqlSession.selectOne("account.countByAccountNickname", accountNickname);
 	}
-	public int countByEmail(String accountEmail) {
-		return sqlSession.selectOne("account.countByEmail", accountEmail);
-	}
-	public int countByContact(String accountContact) {
-		return sqlSession.selectOne("account.countByContact", accountContact);
+	public int countByAccountContact(String accountContact) {
+		return sqlSession.selectOne("account.countByAccountContact", accountContact);
 	}
 	
 	// 로그인 시 회원의 로그인 시간 업데이트 
