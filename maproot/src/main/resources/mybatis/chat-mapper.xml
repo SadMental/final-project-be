@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="chat">
+
+	<!-- <select id="sequence" resultType="int">
+		select chat_seq.nextval from dual
+	</select> -->
+	
+	<insert id="insert">
+		insert into chat(chat_no) values(chat_seq.nextval)
+	</insert>
+	
+	<select id="list" resultType="ChatDto">
+		select * from chat order by chat_no asc
+	</select>
+	
+	<select id="detail" resultType="ChatDto">
+		select * from chat where chat_no = #{chatNo}
+	</select>
+	
+	<!-- <update id="update"> </update> -->
+	
+	<delete id="delete">
+		delete from chat where chat_no = #{chatNo}
+	</delete>
+	
+	<!-- 참여자 처리 -->
+	<insert id="enter">
+		insert into party(party_chat, party_account)
+		values(#{partyChat}, #{partyAccount})
+	</insert>
+	
+	<delete id="leave">
+		delete party 
+		where party_chat = #{partyChat} and party_account = #{partyAccount}
+	</delete>
+	
+	<select id="check" resultType="int">
+		select count(*) from party
+		where party_chat = #{partyChat} and party_account = #{partyAccount}
+	</select>
+</mapper>
