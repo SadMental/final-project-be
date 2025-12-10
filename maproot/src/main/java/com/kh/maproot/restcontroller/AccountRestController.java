@@ -6,12 +6,14 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.maproot.dao.AccountDao;
 import com.kh.maproot.dto.AccountDto;
 import com.kh.maproot.error.TargetNotfoundException;
 import com.kh.maproot.service.AccountService;
+import com.kh.maproot.service.CertService;
 import com.kh.maproot.service.TokenService;
 import com.kh.maproot.vo.AccountLoginResponseVO;
 
@@ -65,7 +67,7 @@ public class AccountRestController {
 			}
 		)
 	// 회원가입
-	@PostMapping("/")
+	@PostMapping("/join")
 	public void insert(AccountDto accountDto) {
 		accountService.join(accountDto);
 	}
@@ -98,7 +100,6 @@ public class AccountRestController {
 				)
 			}
 		)
-	// 로그인
 	@PostMapping("/login")
 	public AccountLoginResponseVO login(@RequestBody AccountDto accountDto) {
 		AccountDto findDto = accountDao.selectOne(accountDto.getAccountId());
@@ -115,4 +116,6 @@ public class AccountRestController {
 				.refreshToken(tokenService.generateRefreshToken(findDto))//갱신토큰
 			.build();
 	}
+	
+	
 }

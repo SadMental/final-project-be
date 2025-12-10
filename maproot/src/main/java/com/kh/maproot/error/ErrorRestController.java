@@ -27,6 +27,11 @@ public class ErrorRestController {
 		return ResponseEntity.status(403).build();
 	}
 	
+	@ExceptionHandler(TargetAlreadyExistsException.class)
+	public ResponseEntity<String> TargetAlreadyExists(TargetAlreadyExistsException e){
+		return ResponseEntity.status(409).build();
+	}
+	
 	// 나머지 모든 예외
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<String> all(Exception e){

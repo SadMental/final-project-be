@@ -20,11 +20,11 @@
 	</select>
 	
 	<delete id="delete">
-		delete refresh_token where refresh_token_no = #{refreshTokenNo}
+		delete from refresh_token where refresh_token_no = #{refreshTokenNo}
 	</delete>
 	
 	<delete id="deleteByTarget">
-		delete refresh_token where refresh_token_target = #{refreshTokenTarget}
+		delete from refresh_token where refresh_token_target = #{refreshTokenTarget}
 	</delete>
 
 </mapper>
