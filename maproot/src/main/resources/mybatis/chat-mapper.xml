@@ -6,10 +6,18 @@
 
 	<!-- <select id="sequence" resultType="int">
 		select chat_seq.nextval from dual
-	</select> -->
+	</select>
 	
 	<insert id="insert">
-		insert into chat(chat_no) values(chat_seq.nextval)
+		insert into chat(chat_no) values(#{chatNo})
+	</insert> -->
+	
+	<insert id="insert" parameterType="ChatDto">
+	    <selectKey keyProperty="chatNo" resultType="int" order="BEFORE">
+            SELECT chat_seq.nextval FROM dual
+        </selectKey>
+		insert into chat(chat_no, chat_maxcount, chat_status, chat_id) 
+        values(#{chatNo}, #{chatMaxCount}, #{chatStatus}, #{chatId}) 
 	</insert>
 	
 	<select id="list" resultType="ChatDto">
@@ -21,6 +29,12 @@
 	</select>
 	
 	<!-- <update id="update"> </update> -->
+	<update id="changeStatus" parameterType="ChatDto">
+	    update chat set
+	        chat_status = #{chatStatus},
+	        chat_id = #{chatId}
+	    where chat_no = #{chatNo}
+	</update>
 	
 	<delete id="delete">
 		delete from chat where chat_no = #{chatNo}
@@ -28,17 +42,17 @@
 	
 	<!-- 참여자 처리 -->
 	<insert id="enter">
-		insert into party(party_chat, party_account)
-		values(#{partyChat}, #{partyAccount})
+		insert into party(chat_no, party_account)
+		values(#{chatNo}, #{partyAccount})
 	</insert>
 	
 	<delete id="leave">
 		delete party 
-		where party_chat = #{partyChat} and party_account = #{partyAccount}
+		where chat_nO = #{chatNo} and party_account = #{partyAccount}
 	</delete>
 	
 	<select id="check" resultType="int">
 		select count(*) from party
-		where party_chat = #{partyChat} and party_account = #{partyAccount}
+		where chat_nO = #{chatNo} and party_account = #{partyAccount}
 	</select>
 </mapper>

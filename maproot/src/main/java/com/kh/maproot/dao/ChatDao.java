@@ -16,8 +16,10 @@ public class ChatDao {
 	private SqlSession sqlSession;
 	
 	public ChatDto insert(ChatDto chatDto) {
-	//		int sequence = sqlSession.selectOne("chat.sequence");
-	//		chatDto.setChatNo(sequence);
+//		int sequence = sqlSession.selectOne("chat.sequence");
+//		chatDto.setChatNo(sequence);
+//		sqlSession.insert("chat.insert", chatDto);
+//		return chatDto;
 		sqlSession.insert("chat.insert", chatDto);
 		return chatDto;
 	}
@@ -30,16 +32,21 @@ public class ChatDao {
 		return sqlSession.selectOne("chat.detail", chatNo);
 	}
 	
+	public boolean changeStatus(ChatDto chatDto) {
+		int result = sqlSession.update("chat.changeStatus", chatDto);
+		return result > 0;
+	}
+	
 	public void enter(int chatNo, String accountId) {
 		Map<String, Object> params = new HashMap<>();
-		params.put("partyChat", chatNo);
+		params.put("chatNo", chatNo);
 		params.put("partyAccount", accountId);
 		sqlSession.insert("chat.enter", params);
 	}
 	
 	public boolean leave(int chatNo, String accountId) {
 		Map<String, Object> params = new HashMap<>();
-		params.put("partyChat", chatNo);
+		params.put("chatNo", chatNo);
 		params.put("partyAccount", accountId);
 		
 		int result = sqlSession.delete("chat.leave", params);
@@ -48,7 +55,7 @@ public class ChatDao {
 	
 	public boolean check(int chatNo, String accountId) {
 		Map<String, Object> params = new HashMap<>();
-		params.put("partyChat", chatNo);
+		params.put("chatNo", chatNo);
 		params.put("partyAccount", accountId);
 		int count = sqlSession.selectOne("chat.check", params);
 		return count > 0;

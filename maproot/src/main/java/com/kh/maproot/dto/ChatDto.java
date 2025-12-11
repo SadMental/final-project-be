@@ -12,4 +12,7 @@ import lombok.NoArgsConstructor;
 public class ChatDto {
 	private int chatNo;
 	private int chatMaxCount;
+	
+	private String chatStatus;
+	private String chatId;
 }
