@@ -141,6 +141,7 @@
 		    <version>0.13.0</version>
 		    <scope>runtime</scope>
 		</dependency>
+		
 		<!-- JSON 변환 시 LocalDateTime을 이해하지 못하는 현상을 해결하는 라이브러리 -->
 		<dependency>
 		    <groupId>com.fasterxml.jackson.datatype</groupId>
@@ -161,8 +162,6 @@
 			<artifactId>reactor-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
-		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-websocket</artifactId>

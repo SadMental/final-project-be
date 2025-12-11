@@ -60,9 +60,7 @@ public class AccountDao {
 	
 	// 회원조회(아이디)
 	public AccountDto selectOne(String accountId) {
-		AccountDto accountDto = sqlSession.selectOne("account.detail", accountId);
-		if(accountDto == null) throw new TargetNotfoundException("아이디가 존재하지 않습니다");
-		return accountDto;
+		return sqlSession.selectOne("account.detail", accountId);
 	}
 	
 	

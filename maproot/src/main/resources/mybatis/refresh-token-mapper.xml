@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="refreshToken">
+
+	<insert id="insert">
+		insert into refresh_token(
+		refresh_token_no, refresh_token_target, refresh_token_value
+		) 
+		values(
+		refresh_token_seq.nextval, #{refreshTokenTarget}, #{refreshTokenValue}
+		)
+	</insert>
+	
+	<select id="detail" resultType="RefreshTokenDto">
+		select * from refresh_token where 
+		refresh_token_target = #{refreshTokenTarget} 
+		and refresh_token_value = #{refreshTokenValue}
+	</select>
+	
+	<delete id="delete">
+		delete from refresh_token where refresh_token_no = #{refreshTokenNo}
+	</delete>
+	
+	<delete id="deleteByTarget">
+		delete from refresh_token where refresh_token_target = #{refreshTokenTarget}
+	</delete>
+
+</mapper>

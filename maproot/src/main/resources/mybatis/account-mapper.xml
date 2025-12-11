@@ -65,7 +65,7 @@
 	
 	<!-- 회원 삭제 -->
 	<delete id="delete">
-		delete account where account_id = #{accountId}
+		delete from account where account_id = #{accountId}
 	</delete>
 	
 	<!-- 회원 상세 조회 -->

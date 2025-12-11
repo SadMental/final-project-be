@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kh.maproot.dao.ChatDao;
 import com.kh.maproot.dto.ChatDto;
 
+
 //@CrossOrigin
 @CrossOrigin(origins = "*")
 @RestController
@@ -32,6 +33,7 @@ public class ChatRestController {
 //		chatDao.enter(resultDto.getChatNo(), tokenVO.getLoginId());
 //		return resultDto;
 //	}
+
 	@PostMapping
 	@Transactional
 	public ChatDto create(@RequestBody ChatDto chatDto) {
@@ -50,7 +52,6 @@ public class ChatRestController {
 	    return resultDto;
 	}
 
-	
 	//상담사 용 목록
 	@GetMapping("list")
 	public List<ChatDto> list() {
@@ -60,7 +61,7 @@ public class ChatRestController {
 	public ChatDto detail(@PathVariable int chatNo) {
 		return chatDao.selectOne(chatNo);
 	}
-	
+
 //	@PostMapping("/enter")
 //	public void enter(@RequestBody ChatDto chatDto,
 //			@RequestAttribute TokenVO tokenVO) {

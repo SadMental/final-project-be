@@ -74,7 +74,7 @@ public class KakaoMapRestController {
 	    KakaoMapLocationVO origin = originOpt.orElseThrow(() -> new IllegalArgumentException("Origin location (no=1) not found."));
 	    KakaoMapLocationVO destination = destinationOpt.orElseThrow(() -> new IllegalArgumentException("Destination location (no=" + lastNo + ") not found."));
 
-	    // 4. 찾은 요소들을 리스트에서 제거합니다.
+	    // 4. 찾은 요소들을 리스트에서 제거합니다.	
 	    location.remove(origin);
 	    location.remove(destination);
 		
