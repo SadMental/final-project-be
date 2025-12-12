@@ -10,10 +10,12 @@ public class ScheduleRouteDto {
 	private Long scheduleRouteNo;
 	private Long scheduleNo;
 	private String scheduleRouteKey;
-	private Integer scheduleRouteStart;
-	private Integer scheduleRouteEnd;
+	private Long scheduleRouteStart;
+	private Long scheduleRouteEnd;
 	private Integer scheduleRouteTime;
 	private Integer scheduleRouteDistance;
 	private String ordinateString; // Geom에 들어가기위한 문자열
 	private String scheduleRoutePriority;
+	private String tempStartKey; // db에 start_no를 저장하기위해 사용하려는 임시 변수
+	private String tempEndKey; // db에 end_no를 저장하기위해 사용하려는 임시 변수
 }

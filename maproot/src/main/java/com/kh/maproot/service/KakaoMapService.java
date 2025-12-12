@@ -1,6 +1,7 @@
 package com.kh.maproot.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -103,89 +104,93 @@ public class KakaoMapService {
 	}
 	@Transactional
 	public void insert(KakaoMapDataDto datas) {
-		// 1. 입력 데이터 추출
-	    Map<String, KakaoMapDaysDto> daysMap = datas.getDays();
+		Map<String, KakaoMapDaysDto> daysMap = datas.getDays();
 	    Map<String, KakaoMapLocationVO> markerMap = datas.getMarkerData();
 	    
-	    // DB 저장을 위한 최종 DTO 리스트 정의
 	    List<ScheduleUnitDto> unitEntities = new ArrayList<>();
 	    List<ScheduleRouteDto> routeEntities = new ArrayList<>();
-
-	    // 임시 스케줄 번호 (DB INSERT 시 필요)
-	    // 실제로는 Service Layer에서 Sequence 등으로 발급받아야 합니다.
-	    Long tempScheduleNo = 56L; 
-
-	    // ==========================================
-	    // A. 마커 데이터 처리 (ScheduleUnitDto 변환)
-	    // ==========================================
-	    // 마커 데이터는 Day 정보에 관계 없이 전체 마커 맵에서 추출
-	    for (String markerId : markerMap.keySet()) {
-	        KakaoMapLocationVO vo = markerMap.get(markerId);
-	        
-	        
-	        ScheduleUnitDto unitDto = ScheduleUnitDto.builder()
-	            .scheduleNo(tempScheduleNo) 
-	            .scheduleKey(markerId) // 마커의 UUID를 scheduleKey로 저장 (논의된 클라이언트 UUID)
-	            .scheduleUnitContent(vo.getContent())
-	            .scheduleUnitTime(0) // 마커에 머무는 시간 (입력 데이터에 없으면 0 또는 null)
-	            .scheduleUnitLat(vo.getY()) // 위도
-	            .scheduleUnitLng(vo.getX()) // 경도
-	            .scheduleUnitName(vo.getName())
-	            // .scheduleUnitPosition은 Day 정보 루프에서 업데이트 필요
-	            .scheduleUnitPosition(0)
-	            // .scheduleUnitDay는 Day 정보 루프에서 업데이트 필요
-	            .scheduleUnitDay(0)
-	            .build();
-	        
-	        unitEntities.add(unitDto);
-	    }
 	    
-	    log.debug(">>> [DB DTO] 생성된 Unit 엔티티 개수: {}", unitEntities.size());
-
+	    Long tempScheduleNo = 56L; 
+	    
 	    // ==========================================
-	    // B. 경로 및 순서 데이터 처리 (ScheduleRouteDto 변환)
+	    // A. 일자별 순회하며 마커(Unit)와 경로(Route) 동시 처리
 	    // ==========================================
 	    for(String dayNumStr : daysMap.keySet()) {
 	        KakaoMapDaysDto day = daysMap.get(dayNumStr);
+	        Integer scheduleDay = Integer.parseInt(dayNumStr); // 일자 (1, 2, 3...)
 	        
-	        // 1. 마커 순서 (Position) 업데이트 (ScheduleUnitDto에 일자 및 순서 매핑)
-	
-
-	        // 2. 경로 데이터 (Routes) 변환
+	        // 1. 마커 순서 처리 (ScheduleUnitDto 변환)
+	        List<String> markerOrderList = day.getMarkerIds(); // 일자별 방문 순서대로의 마커 ID 리스트 (가정)
+	        
+	        if(markerOrderList != null) {
+	            for (String markerId : markerOrderList) {
+	                // 해당 마커의 상세 정보 조회 (markerMap 활용)
+	                KakaoMapLocationVO vo = markerMap.get(markerId); 
+	                
+	                if (vo != null) {
+	                    ScheduleUnitDto unitDto = ScheduleUnitDto.builder()
+	                        .scheduleNo(tempScheduleNo) 
+	                        .scheduleKey(markerId) 
+	                        .scheduleUnitContent(vo.getContent())
+	                        // ... 기타 마커 상세 정보 (좌표, 이름 등)
+	                        .scheduleUnitLat(vo.getY()) 
+	                        .scheduleUnitLng(vo.getX()) 
+	                        .scheduleUnitName(vo.getName())
+	                        // **핵심: 일자 및 순서 매핑**
+	                        .scheduleUnitTime(0) // 해당 세부 일정에서 소요되는 시간데이터는 아직 미정이기에 임시로 0을 입력해둠
+	                        .scheduleUnitDay(scheduleDay)
+	                        .scheduleUnitPosition(vo.getNo())
+	                        .build();
+	                    
+	                    unitEntities.add(unitDto);
+	                }
+	            }
+	        }
+	        
+	        // 2. 경로 데이터 처리 (ScheduleRouteDto 변환)
 	        List<KakaoMapRoutesDto> routes = day.getRoutes();
 	        for(KakaoMapRoutesDto route : routes) {
-	            
-	            // String.valueOf(route.getLinepath()) 대신 Utility 함수 사용
 	            String ordinateString = GeometryUtils.toOrdinateString(route.getLinepath());
+	            String[] tempKey = route.getRouteKey().split("##");
 	            
 	            ScheduleRouteDto routeDto = ScheduleRouteDto.builder()
 	                .scheduleNo(tempScheduleNo)
-	                .scheduleRouteKey(route.getRouteKey()) // UUID A-B
-	                .scheduleRouteStart(1) // 임시 값. 실제로는 UUID로 Unit No를 조회해야 함.
-	                .scheduleRouteEnd(2)   // 임시 값. 실제로는 UUID로 Unit No를 조회해야 함.
+	                .scheduleRouteKey(route.getRouteKey())
 	                .scheduleRouteTime(route.getDuration())
 	                .scheduleRouteDistance(route.getDistance())
-	                .ordinateString(ordinateString) // SDO_GEOMETRY용 문자열
+	                .ordinateString(ordinateString)
 	                .scheduleRoutePriority(route.getPriority())
+	                .tempStartKey(tempKey[0])
+	                .tempEndKey(tempKey[1])
 	                .build();
 	            
 	            routeEntities.add(routeDto);
 	        }
 	    }
-
-	    log.debug(">>> [DB DTO] 생성된 Route 엔티티 개수: {}", routeEntities.size());
-	    log.debug(">>> [SAMPLE] 첫 번째 Route Ordinate String: {}", routeEntities.get(0).getOrdinateString());
 	    
 	    // ==========================================
-	    // 3. 실제 DB 저장
+	    // B. 실제 DB 저장 (Unit 데이터 먼저 저장)
 	    // ==========================================
+	    
+	    // 경로 데이터에 저장할 UnitNo를 위한 임시 Map
+	    Map<String, Long> keyMaps = new HashMap<>();
+	    
+	    // 세부 일정 데이터 저장
 	    for(ScheduleUnitDto unitDto : unitEntities) {
 	    	scheduleUnitDao.insert(unitDto);
-	    	
+	    	keyMaps.put(unitDto.getScheduleKey(), unitDto.getScheduleUnitNo());
 	    }
+	    
+	    log.debug("keyMaps = {}", keyMaps);
+	    // 경로 데이터 저장
 	    for(ScheduleRouteDto routeDto : routeEntities) {
-	    	scheduleRouteDao.insert(routeDto);
+	    	Long startUnitNo = keyMaps.get(routeDto.getTempStartKey());
+	        Long endUnitNo = keyMaps.get(routeDto.getTempEndKey());
+	        
+	        routeDto.setScheduleRouteStart(startUnitNo);
+	        routeDto.setScheduleRouteEnd(endUnitNo);
 	    	
+	    	scheduleRouteDao.insert(routeDto);
 	    }
 	}
 }
