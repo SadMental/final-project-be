@@ -96,10 +96,6 @@ public class ScheduleReviewRestcontroller {
 	    return new ArrayList<>(map.values());
 	}
 	
-	@GetMapping("/list/{scheduleNo}/unit")
-	public List<ScheduleUnitDto> loadUnitData(@PathVariable int scheduleNo) {
-		return scheduleUnitDao.selectByScheduleNo(scheduleNo);
-	}
 	
 	
 	@PostMapping("/insert")

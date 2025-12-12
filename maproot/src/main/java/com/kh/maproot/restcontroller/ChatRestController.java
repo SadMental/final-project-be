@@ -19,7 +19,7 @@ import com.kh.maproot.dto.ChatDto;
 import com.kh.maproot.error.TargetNotfoundException;
 import com.kh.maproot.vo.TokenVO;
 
-@CrossOrigin(origins = "*")
+@CrossOrigin
 @RestController
 @RequestMapping("/chat")
 public class ChatRestController {

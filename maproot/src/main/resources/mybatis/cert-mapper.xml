@@ -11,7 +11,9 @@
 	
 	<select id="check" resultType="int">
 		select count(*) from cert 
-		where cert_target = #{certTarget} and cert_number = #{certNumber}
+		where cert_target = #{certTarget} 
+		  and cert_number = #{certNumber}
+		  <![CDATA[and systimestamp < cert_time + interval '3' minute]]>
 	</select>
 	
 	<delete id="delete">
