@@ -15,6 +15,7 @@ public class KakaoMapLocationVO {
 	private Double y; // lat
 	private String name;
 	private Integer angle;
+	private String content;
 	
 	public String getLngLat() {
 		return x + "," + y;

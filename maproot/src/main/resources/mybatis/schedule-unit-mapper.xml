@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="scheduleUnit">
+
+	<select id="sequence" resultType="long">
+		select schedule_unit_seq.nextval from dual
+	</select>
+	
+	<insert id="insert">
+		insert into schedule_unit(
+			schedule_unit_no, schedule_no, schedule_unit_content, schedule_unit_time,
+			schedule_unit_lat, schedule_unit_lng, schedule_unit_position,
+			schedule_unit_day, schedule_unit_name, schedule_key
+		)
+		values(
+			#{scheduleUnitNo}, #{scheduleNo}, #{scheduleUnitContent}, #{scheduleUnitTime},
+			#{scheduleUnitLat}, #{scheduleUnitLng}, #{scheduleUnitPosition},
+			#{scheduleUnitDay}, #{scheduleUnitName}, #{scheduleKey}
+		)
+	</insert>
+	
+	<select id="detail" resultType="ScheduleUnitDto">
+		select * from schedule_unit where schedule_unit_no = #{scheduleUnitNo}
+	</select>
+	
+</mapper>

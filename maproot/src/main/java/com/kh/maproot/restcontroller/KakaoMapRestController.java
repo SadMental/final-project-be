@@ -1,17 +1,25 @@
 package com.kh.maproot.restcontroller;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kh.maproot.dto.ScheduleRouteDto;
+import com.kh.maproot.dto.ScheduleUnitDto;
+import com.kh.maproot.dto.kakaomap.KakaoMapDataDto;
+import com.kh.maproot.dto.kakaomap.KakaoMapDataWrapperDto;
+import com.kh.maproot.dto.kakaomap.KakaoMapDaysDto;
+import com.kh.maproot.dto.kakaomap.KakaoMapRoutesDto;
 import com.kh.maproot.service.KakaoMapService;
 import com.kh.maproot.vo.kakaomap.KakaoMapGeocoderRequestVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapGeocoderResponseVO;
@@ -31,7 +39,8 @@ public class KakaoMapRestController {
 	
 	@PostMapping("/search")
 	public KakaoMapResponseVO search(@RequestBody List<KakaoMapLocationVO> location, @RequestParam String priority) {
-		log.debug("location : {}", location.size());
+//		List<LocationVO>에는 반드시 2개의 데이터만 들어있다. 
+		log.debug("location = {}", location);
 		String origin = location.removeFirst().getLngLat();
 		String destination =location.removeFirst().getLngLat();
 		
@@ -69,8 +78,7 @@ public class KakaoMapRestController {
 	        .filter(loc -> loc.getNo() != null && loc.getNo() == lastNo) // no가 리스트 크기와 일치하는 요소 필터링
 	        .findFirst();
 	    
-	    // 3. Optional의 존재 여부를 확인하고 해당 요소를 리스트에서 제거합니다.
-	    // (선택 사항: 원본 리스트를 유지하고 싶다면, 제거하지 않고 새로운 리스트를 만들 수 있습니다.)
+	    // 3. Optional의 존재 여부를 확인하고 해당 요소를 새로운 리스트로 만듭니다.
 	    KakaoMapLocationVO origin = originOpt.orElseThrow(() -> new IllegalArgumentException("Origin location (no=1) not found."));
 	    KakaoMapLocationVO destination = destinationOpt.orElseThrow(() -> new IllegalArgumentException("Destination location (no=" + lastNo + ") not found."));
 
@@ -98,7 +106,6 @@ public class KakaoMapRestController {
 	
 	@PostMapping("/getAddress")
 	public KakaoMapGeocoderResponseVO getAddress(@RequestBody KakaoMapLocationVO location) {
-		log.debug("location : {}", location);
 		KakaoMapGeocoderRequestVO requestVO = KakaoMapGeocoderRequestVO.builder()
 					.x(String.valueOf(location.getX()))
 					.y(String.valueOf(location.getY()))
@@ -106,4 +113,10 @@ public class KakaoMapRestController {
 				.build();
 		return kakaoMapService.getAddress(requestVO);
 	}
+	
+	@PostMapping("/insertData")
+	public void insertData(@RequestBody KakaoMapDataWrapperDto data) {
+		kakaoMapService.insert(data.getData());
+	}
+	
 }
