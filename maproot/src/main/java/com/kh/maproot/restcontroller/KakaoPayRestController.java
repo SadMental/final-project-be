@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +26,7 @@ import com.kh.maproot.dto.GiftcardDto;
 import com.kh.maproot.error.TargetNotfoundException;
 import com.kh.maproot.service.KakaoPayService;
 import com.kh.maproot.service.PaymentService;
+import com.kh.maproot.vo.TokenVO;
 import com.kh.maproot.vo.kakaopay.KakaoPayApproveRequestVO;
 import com.kh.maproot.vo.kakaopay.KakaoPayApproveResponseVO;
 import com.kh.maproot.vo.kakaopay.KakaoPayFlashVO;
@@ -92,9 +94,10 @@ public class KakaoPayRestController {
 	@PostMapping("/buy")
 	public KakaoPayReadyResponseVO buy(
 			@RequestBody List<KakaoPayQtyVO> qtyList,
-			@RequestHeader("Frontend-Url") String frontendUrl
-//			@RequestAttribute TokenVO tokenVO) {
-			) {
+			@RequestHeader("Frontend-Url") String frontendUrl, 
+			@RequestAttribute TokenVO tokenVO, 
+			@RequestHeader("Authorization") String bearerToken) {
+		
 		if (qtyList == null || qtyList.isEmpty())
 			throw new TargetNotfoundException();
 
@@ -116,7 +119,7 @@ public class KakaoPayRestController {
 
 		KakaoPayReadyRequestVO requestVO = KakaoPayReadyRequestVO.builder()
 				.partnerOrderId(UUID.randomUUID().toString())
-				.partnerUserId("nodvic")
+				.partnerUserId(tokenVO.getLoginId())
 				.itemName(buffer.toString())// 상품명
 				.totalAmount(total)
 				.build();

@@ -18,7 +18,9 @@ public class InterceptorConfiguration implements WebMvcConfigurer{
         registry.addInterceptor(accountInterceptor)
                     .addPathPatterns(
                         "/account/logout",
-                        "/chat/**"
+                        "/chat/**",
+                        "/kakaopay/buy",
+                        "/payment/**"
                     )
                     .excludePathPatterns(
                         

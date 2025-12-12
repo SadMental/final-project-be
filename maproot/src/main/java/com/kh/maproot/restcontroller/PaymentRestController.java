@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -48,29 +49,20 @@ public class PaymentRestController {
 
 	@Operation(summary = "카카오페이 내 결제내역 조회", description = "KakaoPay-PaymentDto")
 	@GetMapping("/account")
-	public List<PaymentDto> listByOwner(/*@RequestAttribute TokenVO tokenVO*/) {
-		TokenVO tokenVO2 = TokenVO.builder()
-				.loginId("nodvic")
-				.loginLevel("일반회원")
-				.build();
-		
-		return paymentDao.selectList(tokenVO2);
+	public List<PaymentDto> listByOwner(@RequestAttribute TokenVO tokenVO) {
+		return paymentDao.selectList(tokenVO);
 	}
 
 	@Operation(summary = "카카오페이 내 결제내역 상세 조회", description = "KakaoPay-List-PaymentDetailDto")
 	@GetMapping("/{paymentNo}")
-	public PaymentInfoVO detail(@PathVariable long paymentNo/*,
-			@RequestAttribute TokenVO tokenVO*/) {
-		TokenVO tokenVO2 = TokenVO.builder()
-				.loginId("nodvic")
-				.loginLevel("일반회원")
-				.build();
+	public PaymentInfoVO detail(@PathVariable long paymentNo,
+			@RequestAttribute TokenVO tokenVO) {
 		
 		PaymentDto paymentDto = paymentDao.selectOne(paymentNo);
 		if (paymentDto == null)
 			throw new TargetNotfoundException();
 
-		boolean isOwner = paymentDto.getPaymentOwner().equals(tokenVO2.getLoginId());
+		boolean isOwner = paymentDto.getPaymentOwner().equals(tokenVO.getLoginId());
 		if (isOwner == false)
 			throw new NeedPermissionException();
 
@@ -91,14 +83,14 @@ public class PaymentRestController {
 
 	@Operation(summary = "카카오페이 결제 전체 취소", description = "KakaoPay-CancelAll")
 	@DeleteMapping("/{paymentNo}")
-	public void cancel(@PathVariable long paymentNo
-			/*@RequestAttribute TokenVO tokenVO*/) {
+	public void cancel(@PathVariable long paymentNo,
+			@RequestAttribute TokenVO tokenVO) {
 
 		PaymentDto paymentDto = paymentDao.selectOne(paymentNo);
 		if (paymentDto == null)
 			throw new TargetNotfoundException();
 
-		boolean isOwner = paymentDto.getPaymentOwner().equals("nodvic");
+		boolean isOwner = paymentDto.getPaymentOwner().equals(tokenVO.getLoginId());
 		if (isOwner == false)
 			throw new NeedPermissionException();
 
@@ -115,8 +107,8 @@ public class PaymentRestController {
 
 	@Operation(summary = "카카오페이 결제 부분 취소", description = "KakaoPay-CancelUnit")
 	@DeleteMapping("/detail/{paymentDetailNo}")
-	public void cancelUnit(@PathVariable long paymentDetailNo
-			/*@RequestAttribute TokenVO tokenVO*/) {
+	public void cancelUnit(@PathVariable long paymentDetailNo, 
+			@RequestAttribute TokenVO tokenVO) {
 		PaymentDetailDto paymentDetailDto = paymentDetailDao.selectOne(paymentDetailNo);
 		if (paymentDetailDto == null)
 			throw new TargetNotfoundException();
@@ -126,7 +118,7 @@ public class PaymentRestController {
 			throw new TargetNotfoundException();
 
 		// 본인 정보인지 확인
-		boolean isOwner = paymentDto.getPaymentOwner().equals("nodvic");//tokenVO.getLoginId());
+		boolean isOwner = paymentDto.getPaymentOwner().equals(tokenVO.getLoginId());
 		if (isOwner == false)
 			throw new NeedPermissionException();
 

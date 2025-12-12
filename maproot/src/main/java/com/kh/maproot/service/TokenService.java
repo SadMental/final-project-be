@@ -68,20 +68,60 @@ public class TokenService {
 				.accountLevel(tokenVO.getLoginLevel())
 			.build());
 	}
+//	public TokenVO parse(String authorization) {
+//		Claims claims = getClaims(authorization);
+//		return TokenVO.builder()
+//				.loginId((String)claims.get("loginId"))
+//				.loginLevel((String)claims.get("loginLevel"))
+//			.build();
+//	}
+
 	public TokenVO parse(String authorization) {
-		Claims claims = getClaims(authorization);
+		if(authorization.startsWith("Bearer ") == false)
+			throw new UnauthorizationException();
+	
+		String token = authorization.substring(7);
+		
+		SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getKeyStr().getBytes(StandardCharsets.UTF_8));
+		Claims claims = (Claims) Jwts.parser()
+				.verifyWith(key)
+				.requireIssuer(jwtProperties.getIssuer())
+			.build()
+				.parse(token)
+				.getPayload();
+		
 		return TokenVO.builder()
-				.loginId((String)claims.get("loginId"))
-				.loginLevel((String)claims.get("loginLevel"))
-			.build();
+					.loginId((String)claims.get("loginId"))
+					.loginLevel((String)claims.get("loginLevel"))
+				.build();
 	}
 	
+	
 	//JWT 토큰의 만료까지 남은 시간을 구하는 기능
+//	public long getRemain(String bearerToken) {
+//		Claims claims = getClaims(bearerToken);
+//		Date expire = claims.getExpiration();//만료시각 추출
+//		Date now = new Date();
+//		
+//		return expire.getTime() - now.getTime();
+//	}
+	
 	public long getRemain(String bearerToken) {
-		Claims claims = getClaims(bearerToken);
-		Date expire = claims.getExpiration();//만료시각 추출
-		Date now = new Date();
+		if(bearerToken.startsWith("Bearer ") == false)
+			throw new UnauthorizationException();
 		
+		String token = bearerToken.substring(7);
+		
+		SecretKey key = Keys.hmacShaKeyFor(jwtProperties.getKeyStr().getBytes(StandardCharsets.UTF_8));
+		Claims claims = (Claims) Jwts.parser()
+				.verifyWith(key)
+				.requireIssuer(jwtProperties.getIssuer())
+			.build()
+				.parse(token)
+				.getPayload();
+		
+		Date expire = claims.getExpiration();
+		Date now = new Date();
 		return expire.getTime() - now.getTime();
 	}
 	
