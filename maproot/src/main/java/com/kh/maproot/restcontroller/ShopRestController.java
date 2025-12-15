@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kh.maproot.dao.GiftcardDao;
-import com.kh.maproot.dto.GiftcardDto;
+import com.kh.maproot.dao.ShopDao;
+import com.kh.maproot.dto.ShopDto;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,21 +20,22 @@ import lombok.extern.slf4j.Slf4j;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/giftcard") @Slf4j
-public class GiftcardRestController {
+@RequestMapping("/shop") 
+@Slf4j
+public class ShopRestController {
 	@Autowired
-	private GiftcardDao giftcardDao;
+	private ShopDao shopDao;
 	
-	@Operation(summary = "상품권 목록 조회", description = "Giftcard-List-GiftcardDto")
+	@Operation(summary = "상품권 목록 조회", description = "Shop-List-ShopDto")
 	@GetMapping("/")
-	public List<GiftcardDto> list(){
-		List<GiftcardDto> giftcardDto = giftcardDao.selectList();
-		return giftcardDto;
+	public List<ShopDto> list(){
+		List<ShopDto> shopDto = shopDao.selectList();
+		return shopDto;
 	}
 	
-	@Operation(summary = "상품권 상세 조회", description = "Giftcard-GiftcardDto")
-	@GetMapping("/{giftcardNo}")
-	public GiftcardDto detail(@PathVariable long giftcardNo){
-		return giftcardDao.selectOne(giftcardNo);
+	@Operation(summary = "상품권 상세 조회", description = "Shop-ShopDto")
+	@GetMapping("/{shopItemNo}")
+	public ShopDto detail(@PathVariable long shopNo){
+		return shopDao.selectOne(shopNo);
 	}
 }

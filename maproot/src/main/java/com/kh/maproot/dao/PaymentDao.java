@@ -38,6 +38,10 @@ public class PaymentDao {
 		params.put("paymentRemain", paymentRemain);
 		return sqlSession.update("payment.cancelUnit", params) > 0;
 	}
+	
+	public PaymentDto whoCancelAll(long paymentNo) {
+		return sqlSession.selectOne("payment.whoCancelAll", paymentNo);
+	}
 }
 
 

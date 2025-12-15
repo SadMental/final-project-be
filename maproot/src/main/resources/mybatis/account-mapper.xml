@@ -135,5 +135,14 @@
 			order by account_join desc
 	</select>
 	
+<!-- 	카카오페이 관련 -->
+	<select id="originMaxSchedule" resultType="AccountDto">
+		select account_max_schedule from account where account_id = #{accountId}
+	</select>
+	
+	<update id="updateMaxSchedule">
+		update account set account_max_schedule = #{accountMaxSchedule} where account_id = #{accountId}
+	</update>
+<!-- 	카카오페이 관련 -->
 
 </mapper>

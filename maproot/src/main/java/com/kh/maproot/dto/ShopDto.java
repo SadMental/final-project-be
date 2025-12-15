@@ -6,7 +6,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
-public class KakaoPayDto {
-	private Long kakaopayValue;
-	private String kakaopayOwner;
+public class ShopDto {
+	private Long shopNo;
+	private String shopName;
+	private String shopDesc;
+	private Integer shopPrice;
+	private Integer shopValue;
 }

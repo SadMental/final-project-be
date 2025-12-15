@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kh.maproot.dto.AccountDto;
-import com.kh.maproot.error.TargetNotfoundException;
 
 @Repository
 public class AccountDao {
@@ -63,7 +62,15 @@ public class AccountDao {
 		return sqlSession.selectOne("account.detail", accountId);
 	}
 	
+	// 카카오페이 관련
+	public AccountDto originMaxSchedule(String accountId) {
+		return sqlSession.selectOne("account.originMaxSchedule", accountId);
+	}
 	
+	public long updateMaxSchedule(AccountDto accountDto) {
+		return sqlSession.update("account.updateMaxSchedule", accountDto);
+	}
+	// 카카오페이 관련
 	
 
 }
