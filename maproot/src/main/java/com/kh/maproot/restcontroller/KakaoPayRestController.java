@@ -19,10 +19,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kh.maproot.dao.GiftcardDao;
+import com.kh.maproot.dao.ShopDao;
 import com.kh.maproot.dao.PaymentDao;
 import com.kh.maproot.dao.PaymentDetailDao;
-import com.kh.maproot.dto.GiftcardDto;
+import com.kh.maproot.dto.ShopDto;
 import com.kh.maproot.error.TargetNotfoundException;
 import com.kh.maproot.service.KakaoPayService;
 import com.kh.maproot.service.PaymentService;
@@ -49,7 +49,7 @@ public class KakaoPayRestController {
 	@Autowired
 	private KakaoPayService kakaoPayService;
 	@Autowired
-	private GiftcardDao giftcardDao;
+	private ShopDao shopDao;
 	@Autowired
 	private PaymentService paymentService;
 	@Autowired
@@ -104,11 +104,11 @@ public class KakaoPayRestController {
 		StringBuffer buffer = new StringBuffer();
 		int total = 0;
 		for (KakaoPayQtyVO qtyVO : qtyList) {
-			GiftcardDto giftcardDto = giftcardDao.selectOne(qtyVO.getNo());
+			ShopDto shopDto = shopDao.selectOne(qtyVO.getNo());
 			if (buffer.isEmpty()) {
-				buffer.append(giftcardDto.getGiftcardName());
+				buffer.append(shopDto.getShopName());
 			}
-			total += giftcardDto.getGiftcardPrice() * qtyVO.getQty();
+			total += shopDto.getShopPrice() * qtyVO.getQty();
 		}
 
 		if (qtyList.size() >= 2) {

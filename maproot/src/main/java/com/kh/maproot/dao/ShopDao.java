@@ -6,17 +6,17 @@ import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import com.kh.maproot.dto.GiftcardDto;
+import com.kh.maproot.dto.ShopDto;
 
 @Repository
-public class GiftcardDao {
+public class ShopDao {
 	@Autowired
 	private SqlSessionTemplate  sqlSession;
 	
-	public List<GiftcardDto> selectList() {
-		return sqlSession.selectList("giftcard.list");
+	public List<ShopDto> selectList() {
+		return sqlSession.selectList("shop.list");
 	}
-	public GiftcardDto selectOne(Long giftcardNo) {
-		return sqlSession.selectOne("giftcard.list", giftcardNo);
+	public ShopDto selectOne(Long shopNo) {
+		return sqlSession.selectOne("shop.list", shopNo);
 	}
 }

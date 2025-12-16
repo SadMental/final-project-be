@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="shop">
+	
+	<select id="list" resultType="ShopDto">
+		select * from shop 
+		<if test="shopNo != null">
+			where shop_no = #{shopNo}
+		</if>
+		<if test="shopNo == null">
+			order by shop_price asc, shop_value desc
+		</if>
+	</select>
+	
+</mapper>

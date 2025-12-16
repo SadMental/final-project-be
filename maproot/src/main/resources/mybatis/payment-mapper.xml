@@ -38,4 +38,11 @@
 		where payment_no = #{paymentNo}
 	</update>
 	
+<!-- 	카카오페이 관련 -->
+<!-- 전체 취소시, 취소한 PaymentNo는 아는데 PaymentOwner는 알 수 없기에 만들었다 -->
+	<select id="whoCancelAll" resultType="PaymentDto">
+		select * from payment 
+		where payment_no = #{paymentNo}
+	</select>
+<!-- 	카카오페이 관련 -->
 </mapper>
