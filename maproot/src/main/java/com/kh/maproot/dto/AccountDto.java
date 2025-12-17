@@ -50,4 +50,5 @@ public class AccountDto {
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
 	private LocalDateTime accountChange; // 회원 정보 수정 시간
 	private Integer accountMaxSchedule; // 일정 등록 가능한 최대갯수 
+	
 }
