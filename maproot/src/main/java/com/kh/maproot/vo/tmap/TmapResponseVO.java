@@ -16,4 +16,5 @@ public class TmapResponseVO {
 	List<Integer> duration;
 	String priority;
 	List<List<TmapCoordinateVO>> linepath;
+	String type;
 }

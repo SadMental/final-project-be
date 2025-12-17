@@ -308,6 +308,7 @@ public class MapService {
 					.duration(new ArrayList<>())
 					.totalDuration(0)
 					.linepath(new ArrayList<>())
+					.type("WALK")
 				.build();
 		
 		// 현재 처리 중인 구간의 누적 거리/시간
@@ -350,7 +351,7 @@ public class MapService {
 	            }
 
 	        // --- Point: 구간 종료 지점(경유지/도착지) 확인 및 저장 ---
-	        } else if (feature.getGeometry().getType().equalsIgnoreCase("Point") && location.size() > 2) {
+	        } else if (feature.getGeometry().getType().equalsIgnoreCase("Point")) {
 	            
 	        	String pointType = feature.getProperties().getPointType();
 	            
@@ -375,6 +376,7 @@ public class MapService {
 	            }
 	        }
 	    }
+	    log.debug("responseVO = {}", responseVO);
 		
 		return responseVO;
 	}
