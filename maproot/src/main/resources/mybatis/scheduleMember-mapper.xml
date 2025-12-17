@@ -5,4 +5,42 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="scheduleMember">
 
+<select id="select" resultType="scheduleMemberDto">
+	select * from schedule_member
+	<where>
+	<if test="accountId != null">
+		and account_id = #{accountId}
+	</if>
+	<if test="scheduleNo !=null">
+		and schedule_no = #{scheduleNo}
+	</if>
+	</where>
+
+</select>
+
+<select id="selectMemberCount" resultType="Integer">
+	select count(*) from schedule_member where schedule_no=#{scheduleNo}
+</select>
+
+<insert id="insert">
+	 insert into schedule_member (
+        schedule_member_no,
+        schedule_no,
+        account_id,
+        schedule_member_nickname,
+        schedule_member_role,
+        schedule_member_notify,
+        schedule_member_wtime
+    )
+    values (
+        schedule_member_seq.nextval,
+        #{scheduleNo},
+        #{accountId},
+        #{scheduleMemberNickname},
+        #{scheduleMemberRole},
+        #{scheduleMemberNotify},
+        systimestamp
+    )
+</insert>
+
 </mapper>

@@ -20,6 +20,14 @@ public class ScheduleUnitDao {
 		unitDto.setScheduleUnitNo(sequence);
 		sqlSession.insert("scheduleUnit.insert", unitDto);
 		return sqlSession.selectOne("scheduleUnit.detail", sequence);
-		
+	}
+	
+	public ScheduleUnitDto selectFirstUnit(int scheduleNo) {
+		return sqlSession.selectOne("scheduleUnit.selectFirstUnit", scheduleNo);
+	}
+	
+	//총 일정 개수
+	public Integer selectUnitCount(int scheduleNo) {
+		return sqlSession.selectOne("scheduleUnit.selectUnitCount", scheduleNo);	
 	}
 }

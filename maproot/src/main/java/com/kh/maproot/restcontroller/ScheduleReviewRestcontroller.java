@@ -22,11 +22,13 @@ import com.kh.maproot.configuration.EncryptConfiguration;
 import com.kh.maproot.dao.ReviewDao;
 import com.kh.maproot.dao.ReviewUnitLinkDao;
 import com.kh.maproot.dao.ScheduleDao;
+import com.kh.maproot.dao.ScheduleMemberDao;
 import com.kh.maproot.dao.ScheduleUnitDao;
 import com.kh.maproot.dao.reviewScheduleLinkDao;
 import com.kh.maproot.dto.ReviewDto;
 import com.kh.maproot.dto.ReviewUnitLinkDto;
 import com.kh.maproot.dto.ScheduleDto;
+import com.kh.maproot.dto.ScheduleMemberDto;
 import com.kh.maproot.dto.ScheduleUnitDto;
 import com.kh.maproot.schedule.vo.ReviewRequestVO;
 import com.kh.maproot.schedule.vo.ReviewResponseVO;
@@ -51,6 +53,8 @@ public class ScheduleReviewRestcontroller {
 	private reviewScheduleLinkDao reviewScheduleLinkDao;
 	@Autowired
 	private ScheduleUnitDao scheduleUnitDao;
+	@Autowired
+	private ScheduleMemberDao scheduleMemberDao;
 
     ScheduleReviewRestcontroller(EncryptConfiguration encryptConfiguration) {
         this.encryptConfiguration = encryptConfiguration;
@@ -84,7 +88,7 @@ public class ScheduleReviewRestcontroller {
 	                    .scheduleUnitNoList(new ArrayList<>()) // 처음엔 빈 리스트
 	                    .build()
 	        );
-
+	        System.out.println(row);
 	        // 4) 세부 일정 번호가 있으면 리스트에 추가
 	        Integer unitNo = row.getScheduleUnitNo();
 	        if (unitNo != null) { // null 아니면
@@ -149,5 +153,11 @@ public class ScheduleReviewRestcontroller {
 			@PathVariable int reviewNo,
 			@RequestParam int scheduleUnitNo) {
 		reviewUnitLinkDao.deleteBySelectUnit(reviewNo, scheduleUnitNo);
+	}
+	
+	//그룹원 조회
+	@GetMapping("/member/{scheduleNo}")
+	public List<ScheduleMemberDto> selectByScheduleNo(@PathVariable int scheduleNo) {
+		return scheduleMemberDao.selectByScheduleNo(scheduleNo);
 	}
 }

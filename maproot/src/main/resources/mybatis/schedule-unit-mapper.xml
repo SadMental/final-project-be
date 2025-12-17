@@ -25,4 +25,12 @@
 		select * from schedule_unit where schedule_unit_no = #{scheduleUnitNo}
 	</select>
 	
+	<select id="selectFirstUnit" resultType="ScheduleUnitDto">
+		select * from (select * from schedule_unit where schedule_no = #{scheduleNo} order by schedule_unit_position desc) where rownum=1
+	</select>
+	
+	<select id="selectUnitCount" resultType="int">
+		select count(*) from schedule_unit where schedule_no = #{scheduleNo}
+	</select>
+	
 </mapper>
