@@ -30,8 +30,8 @@ public class AttachmentRestController {
 	@Autowired
 	private AttachmentService attachmentService;
 	
-	@GetMapping("/")
-	public ResponseEntity<ByteArrayResource> download(@RequestParam long attachmentNo) throws IOException{
+	@GetMapping("/download")
+	public ResponseEntity<ByteArrayResource> download(@RequestParam Long attachmentNo) throws IOException{
 		// 1. DB에서 정보 조회
 		AttachmentDto attachmentDto = attachmentDao.selectOne(attachmentNo);
 		if(attachmentDto == null) throw new TargetNotfoundException("존재하지 않는 파일");

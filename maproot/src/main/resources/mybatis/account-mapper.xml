@@ -55,12 +55,24 @@
 		where account_id = #{accountId}
 	</update>
 	
-	<!-- 회원 정보 업데이트(PUT) -->
+	<!-- 회원 정보 업데이트(PATCH) -->
 	<update id="update">
 		update account 
-			set 
-			account_nickname = #{accountNickname}, account_email = #{accountEmail}, 
-			account_change = systimestamp
+		<set>
+			<if test="accountNickname != null and accountNickname != ''">
+				account_nickname = #{accountNickname}, 
+			</if>
+			<if test="accountEmail != null and accountEmail != ''">
+				account_email = #{accountEmail}, 
+			</if>
+			<if test="accountBirth != null and accountBirth != ''">
+				account_birth = #{accountBirth}, 
+			</if>
+			<if test="accountGender != null and accountGender != ''">
+				account_gender = #{accountGender}, 
+			</if>
+			account_change = systimestamp 
+		</set>
 		where account_id = #{accountId}
 	</update>
 	

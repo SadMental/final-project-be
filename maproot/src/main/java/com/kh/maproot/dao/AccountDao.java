@@ -26,7 +26,7 @@ public class AccountDao {
 		params.put("attachmentNo", String.valueOf(attachmentNo));
 		sqlSession.insert("account.connect", params);
 	}
-	public long findAttach(String accountId) {
+	public Long findAttach(String accountId) {
 		return sqlSession.selectOne("account.findAttach", accountId);
 	}
 	// 중복검사
@@ -47,7 +47,7 @@ public class AccountDao {
 	public void updateLoginTime(String accountId) {
 		sqlSession.update("account.updateLoginTime", accountId);
 	}
-	// 전체 수정
+	// 부분 수정
 	public boolean update(AccountDto accountDto) {
 		return sqlSession.update("account.update", accountDto) > 0;
 	}

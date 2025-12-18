@@ -12,6 +12,7 @@ import com.kh.maproot.dao.AccountDao;
 import com.kh.maproot.dto.AccountDto;
 import com.kh.maproot.error.TargetAlreadyExistsException;
 import com.kh.maproot.error.TargetNotfoundException;
+import com.kh.maproot.error.UnauthorizationException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,5 +55,30 @@ public class AccountService {
 		}
 		
 		
+	}
+	
+	// 회원 탈퇴 서비스
+	@Transactional
+	public boolean drop(String accountId, String accountPw) {
+		// 1. DB에 존재하는 회원정보를 조회
+		AccountDto accountDto = accountDao.selectOne(accountId);
+		if(accountDto == null) throw new TargetNotfoundException();
+		
+		// 2. 비밀번호 비교
+		boolean isValid = passwordEncoder.matches(accountPw, accountDto.getAccountPw());
+		if(!isValid) throw new UnauthorizationException("비밀번호가 일치하지 않습니다");
+		
+		// 3. 회원 프로필 사진 조회
+		try {
+			Long attachmentNo = accountDao.findAttach(accountId);
+			attachmentService.delete(attachmentNo);
+		}
+		catch (Exception e) {
+			
+		}
+		// 4. 회원 정보 삭제 
+		accountDao.delete(accountId);
+		
+		return true;
 	}
 }

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -200,5 +201,43 @@ public class AccountRestController {
 		// 비밀번호 암호화
 		String newPw = passwordEncoder.encode(accountDto.getAccountPw());
 		accountDao.updatePw(newPw, findDto.getAccountId());
+	}
+	
+	// 마이페이지
+	@GetMapping("/mypage")
+	public AccountDto mypage(@RequestAttribute TokenVO tokenVO) {
+		AccountDto accountDto = accountDao.selectOne(tokenVO.getLoginId());
+		if(accountDto == null) throw new TargetNotfoundException();
+		
+		Long attachmentNo = accountDao.findAttach(accountDto.getAccountId());
+		
+		accountDto.setAttachmentNo(attachmentNo);
+		
+		return accountDto;
+	}
+	// 부분수정(연락처, 비밀번호 제외)
+	@PatchMapping("/edit")
+	public void update(
+			@RequestBody AccountDto accountDto,
+			@RequestAttribute TokenVO tokenVO) {
+		String loginId = tokenVO.getLoginId();
+		AccountDto originDto = accountDao.selectOne(loginId);
+		if(originDto == null) throw new TargetNotfoundException("존재하지 않는 파일");
+		
+		accountDto.setAccountId(loginId);
+		accountDao.update(accountDto);
+	}
+	
+	// 회원 탈퇴 (비밀번호 확인 후에 삭제)
+	@PostMapping("/withdraw")
+	public void withdraw(
+			@RequestAttribute TokenVO tokenVO,
+			@RequestBody AccountDto accountDto) {
+		String loginId = tokenVO.getLoginId();
+		
+		// 프론트에서 보내는 평문 비밀번호
+		String rawPassword = accountDto.getAccountPw();
+		
+		accountService.drop(loginId, rawPassword);
 	}
 }
