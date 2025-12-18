@@ -1,9 +1,12 @@
 package com.kh.maproot.service;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.maproot.dao.AccountDao;
 import com.kh.maproot.dto.AccountDto;
@@ -20,10 +23,11 @@ public class AccountService {
 	private AccountDao accountDao;
 	@Autowired
 	private PasswordEncoder passwordEncoder;
-	
+	@Autowired
+	private AttachmentService attachmentService;
 	// 회원가입을 위한 서비스
 	@Transactional
-	public void join(AccountDto accountDto) {
+	public void join(AccountDto accountDto, MultipartFile attach) throws IllegalStateException, IOException {
 		// [1] 아이디 중복검사
 		if(accountDao.countByAccountId(accountDto.getAccountId()) > 0)
 			throw new TargetAlreadyExistsException("이미 존재하는 아이디입니다");
@@ -42,5 +46,13 @@ public class AccountService {
 		
 		// 등록
 		accountDao.insert(accountDto);
+		
+		// 회원 프로필 추가(회원프로필은 등록 후 해야함)
+		if(attach.isEmpty() == false) {
+			long attachmentNo = attachmentService.save(attach);
+			accountDao.connect(accountDto.getAccountId(), attachmentNo);
+		}
+		
+		
 	}
 }

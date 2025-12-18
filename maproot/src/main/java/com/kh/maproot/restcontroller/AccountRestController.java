@@ -1,10 +1,15 @@
 package com.kh.maproot.restcontroller;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.maproot.dao.AccountDao;
 import com.kh.maproot.dao.RefreshTokenDao;
@@ -20,6 +27,7 @@ import com.kh.maproot.dto.AccountDto;
 import com.kh.maproot.error.TargetNotfoundException;
 import com.kh.maproot.error.UnauthorizationException;
 import com.kh.maproot.service.AccountService;
+import com.kh.maproot.service.AttachmentService;
 import com.kh.maproot.service.TokenService;
 import com.kh.maproot.vo.AccountLoginResponseVO;
 import com.kh.maproot.vo.AccountRefreshVO;
@@ -32,9 +40,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 @Tag(name = "회원 관리 컨트롤러")
-@CrossOrigin
+@CrossOrigin @Slf4j
 @RestController
 @RequestMapping("/account")
 public class AccountRestController {
@@ -49,6 +58,8 @@ public class AccountRestController {
 	private PasswordEncoder passwordEncoder;
 	@Autowired
 	private RefreshTokenDao refreshTokenDao;
+	@Autowired
+	private AttachmentService attachmentService;
 	
 	@Operation(
 			summary = "신규 회원 가입", // [1] 짧은 제목
@@ -79,8 +90,9 @@ public class AccountRestController {
 		)
 	// 회원가입
 	@PostMapping("/join")
-	public void insert(@Valid @RequestBody AccountDto accountDto) {
-		accountService.join(accountDto);
+	public void insert(@ModelAttribute AccountDto accountDto,
+			@RequestParam(required = false) MultipartFile attach) throws IllegalStateException, IOException {
+		accountService.join(accountDto, attach);
 	}
 	// 아이디 중복검사
 	@GetMapping("/accountId/{accountId}")

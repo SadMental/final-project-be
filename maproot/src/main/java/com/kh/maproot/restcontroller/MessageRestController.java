@@ -41,4 +41,19 @@ public class MessageRestController {
 			.last(isLast)
 		.build();
 	}
+	
+	@GetMapping("/messageOrigin/{messageOrigin}/messageNo/{messageNo}")
+	public MessageVO roomMessages(
+			@PathVariable long messageOrigin, @PathVariable long messageNo,
+			@RequestAttribute TokenVO tokenVO) {
+		boolean isEnter = chatDao.check(messageOrigin, tokenVO.getLoginId());
+		if(isEnter == false) throw new NeedPermissionException();
+		List<MessageDto> messages = messageDao.selectList(messageOrigin, messageNo);
+		boolean isLast = messages.isEmpty() ? true : 
+							messageDao.checkLast(messages.get(messages.size()-1));
+		return MessageVO.builder()
+					.message(messages)
+					.last(isLast)
+				.build();
+	}
 }

@@ -18,6 +18,18 @@
 			)
 	</insert>
 	
+	<!-- 회원프로필 -->
+	<insert id="connect">
+		insert into account_profile(account_id, attachment_no) 
+		values(
+		#{accountId}, #{attachmentNo}
+		)
+	</insert>
+	<select id="findAttach" resultType="long">
+		select attachment_no from account_profile 
+		where account_id = #{accountId}
+	</select>
+	
 	<!-- 중복검사 -->
 	<select id="countByAccountId" resultType="int">
 		select count(*) from account where account_id = #{accountId}
@@ -154,7 +166,7 @@
 		</choose>
 	</select>
 	
-<!-- 	카카오페이 관련 -->
+	<!-- 카카오페이 관련 -->
 	<select id="originMaxSchedule" resultType="AccountDto">
 		select account_max_schedule from account where account_id = #{accountId}
 	</select>
@@ -162,6 +174,5 @@
 	<update id="updateMaxSchedule">
 		update account set account_max_schedule = #{accountMaxSchedule} where account_id = #{accountId}
 	</update>
-<!-- 	카카오페이 관련 -->
 
 </mapper>

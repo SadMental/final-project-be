@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kh.maproot.dao.ChatDao;
 import com.kh.maproot.dao.MessageDao;
 import com.kh.maproot.dto.MessageDto;
-import com.kh.maproot.vo.ChatGroupRequestVO;
+import com.kh.maproot.vo.MemberRequestVO;
 import com.kh.maproot.vo.TokenVO;
 
 @Service
@@ -21,7 +21,7 @@ public class ChatService {
 	private ChatDao chatDao;
 	
 	@Transactional
-	public void sendWaiting(int chatNo) {
+	public void sendWaiting(long chatNo) {
 		MessageDto messageDto = messageDao.insert(MessageDto.builder()
 				.messageType("system")
 				.messageContent("상담사와 연결하는 중 입니다")
@@ -30,12 +30,12 @@ public class ChatService {
 		);
 		
 		simpMessagingTemplate.convertAndSend(
-			"/public/group/" + chatNo + "/system", messageDto
+			"/public/message/" + chatNo + "/system", messageDto
 		);
 	}
 	
 	@Transactional
-	public void sendAgentAssigned(int chatNo, String accountId) {
+	public void sendAgentAssigned(long chatNo, String accountId) {
 		MessageDto messageDto = messageDao.insert(MessageDto.builder()
 				.messageType("system")
 				.messageContent("상담사와 연결되었습니다")
@@ -44,12 +44,12 @@ public class ChatService {
 		);
 		
 		simpMessagingTemplate.convertAndSend(
-			"/public/group/" + chatNo + "/system", messageDto
+			"/public/message/" + chatNo + "/system", messageDto
 		);
 	}
 	
 	@Transactional
-	public void sendChatEnd(int chatNo) {
+	public void sendChatEnd(long chatNo) {
 		MessageDto messageDto = messageDao.insert(MessageDto.builder()
 				.messageType("system")
 				.messageContent("상담사와의 연결이 종료되었습니다.")
@@ -58,27 +58,27 @@ public class ChatService {
 		);
 		
 		simpMessagingTemplate.convertAndSend(
-			"/public/group/" + chatNo + "/system", messageDto
+			"/public/message/" + chatNo + "/system", messageDto
 		);
 	}
 	
 	@Transactional
-	public void sendChat(int chatNo, ChatGroupRequestVO requestVO, TokenVO tokenVO) {
+	public void sendChat(long chatNo, MemberRequestVO requestVO, TokenVO tokenVO) {
 		MessageDto messageDto = messageDao.insert(
 			MessageDto.builder()
-				.messageNo(chatNo)
+				.messageChat(chatNo)
 				.messageType("chat")
 				.messageContent(requestVO.getContent())
 				.messageSender(tokenVO.getLoginId())
 			.build()
 		);
 		simpMessagingTemplate.convertAndSend(
-			"/public/group/"+chatNo, messageDto 
+			"/public/message/"+chatNo, messageDto 
 		);
 	}
 	
 	@Transactional
-	public void sendWarning(int chatNo, ChatGroupRequestVO requestVO, TokenVO tokenVO) {
+	public void sendWarning(long chatNo, MemberRequestVO requestVO, TokenVO tokenVO) {
 		MessageDto messageDto = messageDao.insert(MessageDto.builder()
 					.messageChat(chatNo)
 					.messageType("warning")
@@ -86,7 +86,7 @@ public class ChatService {
 				.build());
 		
 		simpMessagingTemplate.convertAndSend(
-				"/private/group/"+chatNo+"/warning/"+tokenVO.getLoginId(), messageDto
+				"/private/message/"+chatNo+"/warning/"+tokenVO.getLoginId(), messageDto
 		);
 	}
 }
