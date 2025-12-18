@@ -1,5 +1,6 @@
 package com.kh.maproot.vo.kakaomap;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
@@ -17,6 +18,7 @@ public class KakaoMapLocationVO {
 	private Integer angle;
 	private String content;
 	
+	@JsonIgnore
 	public String getLngLat() {
 		return x + "," + y;
 	}

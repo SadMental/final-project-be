@@ -11,7 +11,8 @@
 	<insert id="insert">
 		insert into schedule_route(
 			schedule_route_no, schedule_no, schedule_route_key, schedule_route_start, schedule_route_end,
-			schedule_route_time, schedule_route_distance, schedule_route_priority, schedule_route_geom
+			schedule_route_time, schedule_route_distance, schedule_route_priority, schedule_route_geom, 
+			schedule_route_type, schedule_unit_day
 		) 
 		values (
 			#{scheduleRouteNo}, #{scheduleNo}, #{scheduleRouteKey}, #{scheduleRouteStart}, #{scheduleRouteEnd},
@@ -20,12 +21,23 @@
 	            2002, 4326, NULL,
 	            SDO_ELEM_INFO_ARRAY(1, 2, 1),
 	            SDO_ORDINATE_ARRAY( ${ordinateString} ) 
-	        )
+	        ),
+	        #{scheduleRouteType}, #{scheduleUnitDay}
 		)
 	</insert>
 	
 	<select id="detail" resultType="ScheduleRouteDto">
 		select * from schedule_route where schedule_route_no = #{schedultRouteNo}
 	</select>
+	
+	<select id="selectList" resultType="ScheduleRouteDto">
+		select 
+			*
+		from schedule_route where schedule_no = #{scheduleNo}
+	</select>
+	
+	<delete id="deleteByScheduleNo">
+		delete from schedule_route where schedule_no = #{scheduleNo}
+	</delete>
 	
 </mapper>
