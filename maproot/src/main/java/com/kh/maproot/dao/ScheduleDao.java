@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kh.maproot.dto.ScheduleDto;
+import com.kh.maproot.error.TargetNotfoundException;
 
 @Repository
 public class ScheduleDao {
@@ -12,15 +13,17 @@ public class ScheduleDao {
 	@Autowired
 	private SqlSession sqlSession;
 	
-	public int insert(ScheduleDto scheduleDto) {
-		int sequence = sqlSession.selectOne("schedule.sequence");
+	public Long insert(ScheduleDto scheduleDto) {
+		Long sequence = sqlSession.selectOne("schedule.sequence");
 		scheduleDto.setScheduleNo(sequence);
 		sqlSession.insert("schedule.insert", scheduleDto);
 		return sequence;
 	}
 	
-	public ScheduleDto selectByScheduleNo(int scheduleNo) {
-		return sqlSession.selectOne("schedule.selectByScheduleNo", scheduleNo);
+	public ScheduleDto selectByScheduleNo(Long scheduleNo) {
+		ScheduleDto scheduleDto = sqlSession.selectOne("schedule.selectByScheduleNo", scheduleNo);
+		if(scheduleDto == null) throw new TargetNotfoundException();
+		return scheduleDto;
 	}
 
 }

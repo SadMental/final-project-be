@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 
 public class ScheduleListResponseVO {
 	
-	 private Integer scheduleNo;
+	 private Long scheduleNo;
 	  private String scheduleName;
 	  private String scheduleState;   // open/close/progress
 	  private String schedulePublic;  // Y/N

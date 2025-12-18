@@ -1,5 +1,7 @@
 package com.kh.maproot.dao;
 
+import java.util.List;
+
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -18,5 +20,14 @@ public class ScheduleRouteDao {
 		sqlSession.insert("scheduleRoute.insert", routeDto);
 		return sqlSession.selectOne("scheduleRoute.detail", sequence);
 		
+	}
+
+	public boolean deleteByScheduleNo(Long scheduleNo) {
+		return sqlSession.delete("scheduleRoute.deleteByScheduleNo", scheduleNo) > 0;		
+	}
+
+	public List<ScheduleRouteDto> selectList(Long scheduleNo) {
+		List<ScheduleRouteDto> routeList = sqlSession.selectList("scheduleRoute.selectList", scheduleNo);
+		return routeList.isEmpty()? List.of():routeList;
 	}
 }

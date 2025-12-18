@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data @Builder @AllArgsConstructor @NoArgsConstructor
 public class ScheduleTagDto {
 
-	private int scheduleNo;
+	private Long scheduleNo;
 	private String tagName;
 	
 }
