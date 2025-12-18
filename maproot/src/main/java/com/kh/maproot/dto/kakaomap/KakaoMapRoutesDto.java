@@ -5,10 +5,11 @@ import java.util.List;
 import com.kh.maproot.vo.kakaomap.KakaoMapCoordinateVO;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data @NoArgsConstructor @AllArgsConstructor
+@Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class KakaoMapRoutesDto {
 	private String routeKey;
 	private String priority;

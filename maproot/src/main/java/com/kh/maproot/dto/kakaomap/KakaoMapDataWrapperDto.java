@@ -8,4 +8,5 @@ import lombok.NoArgsConstructor;
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class KakaoMapDataWrapperDto {
 	private KakaoMapDataDto data;
+	private Long scheduleNo;
 }

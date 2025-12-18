@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Data @AllArgsConstructor @NoArgsConstructor @Builder
 public class ScheduleDto {
 	
-    private Integer scheduleNo;         // NUMBER
+    private Long scheduleNo;         // NUMBER
     private String scheduleName;    // VARCHAR2(100)
     private Integer scheduleView;       // NUMBER
     private Integer scheduleLike;       // NUMBER     

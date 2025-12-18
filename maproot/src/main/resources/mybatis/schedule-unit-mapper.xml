@@ -33,4 +33,16 @@
 		select count(*) from schedule_unit where schedule_no = #{scheduleNo}
 	</select>
 	
+	<select id="selectUnitForKey" resultType="ScheduleUnitDto">
+		select * from schedule_unit where schedule_key = #{scheduleKey}
+	</select>
+	
+	<select id="selectList" resultType="ScheduleUnitDto">
+		select * from schedule_unit where schedule_no = #{scheduleNo}
+	</select>
+	
+	<delete id="deleteByScheduleNo">
+		delete from schedule_unit where schedule_no = #{scheduleNo}
+	</delete>
+	
 </mapper>

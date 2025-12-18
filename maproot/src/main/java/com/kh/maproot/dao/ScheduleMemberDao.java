@@ -24,7 +24,7 @@ public class ScheduleMemberDao {
 		return sqlSession.selectList("scheduleMember.select", params);
 	}
 
-	public Integer selectMemberCount(int scheduleNo) {
+	public Integer selectMemberCount(Long scheduleNo) {
 		return sqlSession.selectOne("scheduleMember.selectMemberCount", scheduleNo);
 	}
 
@@ -32,7 +32,7 @@ public class ScheduleMemberDao {
 		sqlSession.insert("scheduleMember.insert", scheduleMemberDto);
 	}
 	
-	public List<ScheduleMemberDto> selectByScheduleNo(int scheduleNo) {
+	public List<ScheduleMemberDto> selectByScheduleNo(Long scheduleNo) {
 		Map<String, Object> params = new HashMap<>();
 		params.put("scheduleNo", scheduleNo);
 		
