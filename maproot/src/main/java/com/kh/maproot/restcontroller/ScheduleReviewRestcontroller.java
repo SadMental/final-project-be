@@ -157,7 +157,7 @@ public class ScheduleReviewRestcontroller {
 	
 	//그룹원 조회
 	@GetMapping("/member/{scheduleNo}")
-	public List<ScheduleMemberDto> selectByScheduleNo(@PathVariable int scheduleNo) {
+	public List<ScheduleMemberDto> selectByScheduleNo(@PathVariable Long scheduleNo) {
 		return scheduleMemberDao.selectByScheduleNo(scheduleNo);
 	}
 }

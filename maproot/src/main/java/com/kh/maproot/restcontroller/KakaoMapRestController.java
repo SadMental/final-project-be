@@ -9,14 +9,20 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kh.maproot.dto.ScheduleDto;
 import com.kh.maproot.dto.kakaomap.KakaoMapDataWrapperDto;
+import com.kh.maproot.dto.kakaomap.KakaoMapSearchAddressRequestDto;
+import com.kh.maproot.dto.kakaomap.KakaoMapSearchDocument;
 import com.kh.maproot.dto.tmap.TmapResponseDto;
+import com.kh.maproot.schedule.vo.ScheduleInsertDataWrapperVO;
 import com.kh.maproot.service.MapService;
+import com.kh.maproot.vo.TokenVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapGeocoderRequestVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapGeocoderResponseVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapLocationVO;
@@ -61,7 +67,7 @@ public class KakaoMapRestController {
 	}
 	
 	@PostMapping("/searchAll")
-	public KakaoMapResponseVO searchAll(@RequestBody List<KakaoMapLocationVO> location) {
+	public KakaoMapResponseVO searchAll(@RequestBody List<KakaoMapLocationVO> location, @RequestParam String priority) {
 		// **1. 시작점 (Origin): no가 1인 요소를 찾아서 제거하고 가져옵니다.**
 	    // 일반적으로 리스트의 순서상 첫 번째는 no가 1일 경우가 많으므로 1로 가정합니다.
 	    Optional<KakaoMapLocationVO> originOpt = location.stream()
@@ -91,7 +97,7 @@ public class KakaoMapRestController {
 					.roadevent(2)
 					.alternatives(true)
 					.summary(false)
-					.priority("RECOMMEND")
+					.priority(priority)
 //					.avoid(null)
 //					.roadDetails(null)
 //					.carType(null)
@@ -120,13 +126,16 @@ public class KakaoMapRestController {
 	}
 	
 	@PostMapping("/searchAddress")
-	public List<Map<String, Object>> searchAddress(@RequestBody Map<String, Object> searchData) {
+	public List<KakaoMapSearchDocument> searchAddress(@RequestBody KakaoMapSearchAddressRequestDto searchData) {
 		return mapService.getMarkerData(searchData);
 	}
 	
 	@PostMapping("/insertData")
-	public void insertData(@RequestBody KakaoMapDataWrapperDto data) {
-		mapService.insert(data.getData());
+	public ScheduleDto insertData(
+			@RequestBody ScheduleInsertDataWrapperVO warpper,
+			@RequestAttribute TokenVO tokenVO) {
+		
+		return mapService.insert(warpper, tokenVO);
 	}
 	
 }

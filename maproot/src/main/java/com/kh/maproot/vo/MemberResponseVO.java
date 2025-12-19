@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class MemberResponseVO {
 	@Builder.Default
-	private String type = "chat";
+	private String type = "TALK";
 	private String loginId;
 	private String content;
 	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")

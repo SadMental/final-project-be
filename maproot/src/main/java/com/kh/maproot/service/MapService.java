@@ -1,9 +1,7 @@
 package com.kh.maproot.service;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -15,20 +13,27 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kh.maproot.aop.TokenRenewalInterceptor;
+import com.kh.maproot.dao.ScheduleDao;
 import com.kh.maproot.dao.ScheduleRouteDao;
 import com.kh.maproot.dao.ScheduleUnitDao;
+import com.kh.maproot.dto.ScheduleDto;
 import com.kh.maproot.dto.ScheduleRouteDto;
 import com.kh.maproot.dto.ScheduleUnitDto;
 import com.kh.maproot.dto.kakaomap.KakaoMapDataDto;
+import com.kh.maproot.dto.kakaomap.KakaoMapDataWrapperDto;
 import com.kh.maproot.dto.kakaomap.KakaoMapDaysDto;
 import com.kh.maproot.dto.kakaomap.KakaoMapRoutesDto;
+import com.kh.maproot.dto.kakaomap.KakaoMapSearchAddressRequestDto;
+import com.kh.maproot.dto.kakaomap.KakaoMapSearchDocument;
+import com.kh.maproot.dto.kakaomap.KakaoMapSearchMeta;
+import com.kh.maproot.dto.kakaomap.KakaoMapSearchResponseDto;
 import com.kh.maproot.dto.tmap.TmapFeatureDto;
 import com.kh.maproot.dto.tmap.TmapGeometryDto;
 import com.kh.maproot.dto.tmap.TmapResponseDto;
+import com.kh.maproot.error.UnauthorizationException;
+import com.kh.maproot.schedule.vo.ScheduleInsertDataWrapperVO;
 import com.kh.maproot.utils.GeometryUtils;
+import com.kh.maproot.vo.TokenVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapGeocoderRequestVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapGeocoderResponseVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapLocationVO;
@@ -44,7 +49,6 @@ import lombok.extern.slf4j.Slf4j;
 @Service @Slf4j
 public class MapService {
 
-    private final TokenRenewalInterceptor tokenRenewalInterceptor;
 	@Autowired @Qualifier("kakaomapWebClient")
 	private WebClient mapClient;
 	
@@ -59,13 +63,9 @@ public class MapService {
 	
 	@Autowired
 	private ScheduleRouteDao scheduleRouteDao;
-
-
-    MapService(TokenRenewalInterceptor tokenRenewalInterceptor) {
-        this.tokenRenewalInterceptor = tokenRenewalInterceptor;
-    }
 	
-	
+	@Autowired
+	private ScheduleDao scheduleDao;	
 	
 	public KakaoMapResponseVO direction(KakaoMapRequestVO requestVO) {
 		KakaoMapResponseVO response = mapClient.get() 
@@ -123,19 +123,19 @@ public class MapService {
 		return response;
 	}
 	
-    public List<Map<String, Object>> getMarkerData(Map<String, Object> requestVO) {
-        String query = (String) requestVO.get("query");
+    public List<KakaoMapSearchDocument> getMarkerData(KakaoMapSearchAddressRequestDto requestVO) {
+        String query = (String) requestVO.getQuery();
         // 전체 결과를 담을 리스트 (document List)
-        List<Map<String, Object>> accumulatedDocuments = new ArrayList<>();
+        List<KakaoMapSearchDocument> accumulatedDocuments = new ArrayList<>();
 
         // 1페이지부터 재귀 호출 시작
         // (query, page, 누적 리스트)를 전달
         return roopSearch(query, 1, accumulatedDocuments);
     }
 
-    private List<Map<String, Object>> roopSearch(String query, int currentPage, List<Map<String, Object>> accumulatedDocuments) {
+    private List<KakaoMapSearchDocument> roopSearch(String query, int currentPage, List<KakaoMapSearchDocument> accumulatedDocuments) {
         // API 호출 (currentPage를 사용)
-        Map<String, Object> response = localClient.get()
+    	KakaoMapSearchResponseDto response = localClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/search/keyword")
                         .queryParam("query", query)
@@ -143,13 +143,13 @@ public class MapService {
                         .build()
                 )
                 .retrieve()
-                .bodyToMono(Map.class)
+                .bodyToMono(KakaoMapSearchResponseDto.class)
                 .block();
 
         // 응답 데이터 파싱
-        Map<String, Object> meta = (Map<String, Object>) response.get("meta");
-        List<Map<String, Object>> documents = (List<Map<String, Object>>) response.get("documents");
-        boolean isEnd = (Boolean) meta.get("is_end");
+        KakaoMapSearchMeta meta = response.getMeta();
+        List<KakaoMapSearchDocument> documents = response.getDocuments();
+        boolean isEnd = (Boolean) meta.isEnd();
 
         // 1. 현재 페이지의 documents를 누적 리스트에 추가
         if (documents != null) {
@@ -169,14 +169,23 @@ public class MapService {
     }
 	
 	@Transactional
-	public void insert(KakaoMapDataDto datas) {
-		Map<String, KakaoMapDaysDto> daysMap = datas.getDays();
-	    Map<String, KakaoMapLocationVO> markerMap = datas.getMarkerData();
+	public ScheduleDto insert(ScheduleInsertDataWrapperVO wrapper, TokenVO tokenVO) {
+		ScheduleDto scheduleDto = wrapper.getScheduleDto();
+		Long scheduleNo = scheduleDto.getScheduleNo(); 
+		ScheduleDto findDto = scheduleDao.selectByScheduleNo(scheduleNo);
+		if(!findDto.getScheduleOwner().equals(tokenVO.getLoginId())) throw new UnauthorizationException();
+		
+		scheduleRouteDao.deleteByScheduleNo(scheduleNo);
+		scheduleUnitDao.deleteByScheduleNo(scheduleNo);
+	    
+		KakaoMapDataDto data = wrapper.getData();
+
+		Map<String, KakaoMapDaysDto> daysMap = data.getDays();
+	    Map<String, KakaoMapLocationVO> markerMap = data.getMarkerData();
 	    
 	    List<ScheduleUnitDto> unitEntities = new ArrayList<>();
 	    List<ScheduleRouteDto> routeEntities = new ArrayList<>();
 	    
-	    Long tempScheduleNo = 56L; 
 	    
 	    // ==========================================
 	    // A. 일자별 순회하며 마커(Unit)와 경로(Route) 동시 처리
@@ -195,7 +204,7 @@ public class MapService {
 	                
 	                if (vo != null) {
 	                    ScheduleUnitDto unitDto = ScheduleUnitDto.builder()
-	                        .scheduleNo(tempScheduleNo) 
+	                        .scheduleNo(scheduleNo) 
 	                        .scheduleKey(markerId) 
 	                        .scheduleUnitContent(vo.getContent())
 	                        // ... 기타 마커 상세 정보 (좌표, 이름 등)
@@ -220,12 +229,14 @@ public class MapService {
 	            String[] tempKey = route.getRouteKey().split("##");
 	            
 	            ScheduleRouteDto routeDto = ScheduleRouteDto.builder()
-	                .scheduleNo(tempScheduleNo)
+	                .scheduleNo(scheduleNo)
+	                .scheduleUnitDay(scheduleDay)
 	                .scheduleRouteKey(route.getRouteKey())
 	                .scheduleRouteTime(route.getDuration())
 	                .scheduleRouteDistance(route.getDistance())
 	                .ordinateString(ordinateString)
 	                .scheduleRoutePriority(route.getPriority())
+	                .scheduleRouteType(route.getType())
 	                .tempStartKey(tempKey[0])
 	                .tempEndKey(tempKey[1])
 	                .build();
@@ -244,10 +255,10 @@ public class MapService {
 	    // 세부 일정 데이터 저장
 	    for(ScheduleUnitDto unitDto : unitEntities) {
 	    	scheduleUnitDao.insert(unitDto);
+	    	
 	    	keyMaps.put(unitDto.getScheduleKey(), unitDto.getScheduleUnitNo());
 	    }
 	    
-	    log.debug("keyMaps = {}", keyMaps);
 	    // 경로 데이터 저장
 	    for(ScheduleRouteDto routeDto : routeEntities) {
 	    	Long startUnitNo = keyMaps.get(routeDto.getTempStartKey());
@@ -258,7 +269,10 @@ public class MapService {
 	    	
 	    	scheduleRouteDao.insert(routeDto);
 	    }
+	    
+	    return scheduleDao.updateUnit(scheduleDto);
 	}
+	
 	public TmapResponseVO walk(List<KakaoMapLocationVO> location, String priority) {
 		
 		KakaoMapLocationVO start = location.get(0);

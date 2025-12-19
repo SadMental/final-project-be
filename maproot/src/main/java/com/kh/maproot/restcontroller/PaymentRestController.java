@@ -19,6 +19,8 @@ import com.kh.maproot.error.NeedPermissionException;
 import com.kh.maproot.error.TargetNotfoundException;
 import com.kh.maproot.service.KakaoPayService;
 import com.kh.maproot.service.PaymentService;
+import com.kh.maproot.vo.PageVO;
+import com.kh.maproot.vo.PaymentListVO;
 import com.kh.maproot.vo.TokenVO;
 import com.kh.maproot.vo.kakaopay.KakaoPayCancelRequestVO;
 import com.kh.maproot.vo.kakaopay.KakaoPayCancelResponseVO;
@@ -132,5 +134,24 @@ public class PaymentRestController {
 		KakaoPayCancelResponseVO responseVO = kakaoPayService.cancel(requestVO);
 
 		paymentService.cancelUnit(paymentDetailDto, responseVO);
+	}
+	
+	@GetMapping("/page/{page}")
+	public PaymentListVO listByPaging(@PathVariable int page, @RequestAttribute TokenVO tokenVO) {
+		PageVO pageVO = new PageVO();
+		pageVO.setPage(page);
+		pageVO.setDataCount(paymentDao.count(tokenVO.getLoginId()));
+		
+		List<PaymentDto> list = paymentDao.selectList(pageVO, tokenVO.getLoginId());
+		
+		return PaymentListVO.builder()
+					.page(pageVO.getPage())
+					.size(pageVO.getSize())
+					.count(pageVO.getDataCount())
+					.begin(pageVO.getBegin())
+					.end(pageVO.getEnd())
+					.last(pageVO.getPage() >= pageVO.getTotalPage())
+					.list(list)
+				.build();
 	}
 }

@@ -3,6 +3,7 @@ package com.kh.maproot.restcontroller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,5 +41,20 @@ public class MessageRestController {
 			.message(message)
 			.last(isLast)
 		.build();
+	}
+	
+	@GetMapping("/messageOrigin/{messageOrigin}/messageNo/{messageNo}")
+	public MessageVO roomMessages(
+			@PathVariable long messageOrigin, @PathVariable long messageNo,
+			@RequestAttribute TokenVO tokenVO) {
+		boolean isEnter = chatDao.check(messageOrigin, tokenVO.getLoginId());
+		if(isEnter == false) throw new NeedPermissionException();
+		List<MessageDto> messages = messageDao.selectList(messageOrigin, messageNo);
+		boolean isLast = messages.isEmpty() ? true : 
+							messageDao.checkLast(messages.get(messages.size()-1));
+		return MessageVO.builder()
+					.message(messages)
+					.last(isLast)
+				.build();
 	}
 }

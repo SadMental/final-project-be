@@ -24,12 +24,12 @@
 	
 	<select id="list" resultType="messageDto">
 		select * from (
-			select rownom rn, TMP.* from (
+			select rownum rn, TMP.* from (
 				select * from message
-				wheremessage_chat = #{messageChat}
+				where message_chat = #{messageChat} 
 				<if test="messageNo != null">
 					<![CDATA[
-						and message_no < #{messageNo}
+						and message_no < #{messageNo} 
 					]]>
 				</if>
 				order by message_no desc

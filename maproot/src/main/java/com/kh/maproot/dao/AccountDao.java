@@ -19,6 +19,16 @@ public class AccountDao {
 	public void insert(AccountDto accountDto) {
 		sqlSession.insert("account.insert", accountDto);
 	}
+	// 회원 프로필
+	public void connect(String accountId, long attachmentNo) {
+		Map<String, Object> params = new HashMap<>();
+		params.put("accountId", accountId);
+		params.put("attachmentNo", String.valueOf(attachmentNo));
+		sqlSession.insert("account.connect", params);
+	}
+	public Long findAttach(String accountId) {
+		return sqlSession.selectOne("account.findAttach", accountId);
+	}
 	// 중복검사
 	public int countByAccountId(String accountId) {
 		return sqlSession.selectOne("account.countByAccountId", accountId);
@@ -37,7 +47,7 @@ public class AccountDao {
 	public void updateLoginTime(String accountId) {
 		sqlSession.update("account.updateLoginTime", accountId);
 	}
-	// 전체 수정
+	// 부분 수정
 	public boolean update(AccountDto accountDto) {
 		return sqlSession.update("account.update", accountDto) > 0;
 	}
@@ -82,7 +92,5 @@ public class AccountDao {
 	public long updateMaxSchedule(AccountDto accountDto) {
 		return sqlSession.update("account.updateMaxSchedule", accountDto);
 	}
-	// 카카오페이 관련
-	
 
 }

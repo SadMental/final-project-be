@@ -18,6 +18,18 @@
 			)
 	</insert>
 	
+	<!-- 회원프로필 -->
+	<insert id="connect">
+		insert into account_profile(account_id, attachment_no) 
+		values(
+		#{accountId}, #{attachmentNo}
+		)
+	</insert>
+	<select id="findAttach" resultType="long">
+		select attachment_no from account_profile 
+		where account_id = #{accountId}
+	</select>
+	
 	<!-- 중복검사 -->
 	<select id="countByAccountId" resultType="int">
 		select count(*) from account where account_id = #{accountId}
@@ -43,12 +55,24 @@
 		where account_id = #{accountId}
 	</update>
 	
-	<!-- 회원 정보 업데이트(PUT) -->
+	<!-- 회원 정보 업데이트(PATCH) -->
 	<update id="update">
 		update account 
-			set 
-			account_nickname = #{accountNickname}, account_email = #{accountEmail}, 
-			account_change = systimestamp
+		<set>
+			<if test="accountNickname != null and accountNickname != ''">
+				account_nickname = #{accountNickname}, 
+			</if>
+			<if test="accountEmail != null and accountEmail != ''">
+				account_email = #{accountEmail}, 
+			</if>
+			<if test="accountBirth != null and accountBirth != ''">
+				account_birth = #{accountBirth}, 
+			</if>
+			<if test="accountGender != null and accountGender != ''">
+				account_gender = #{accountGender}, 
+			</if>
+			account_change = systimestamp 
+		</set>
 		where account_id = #{accountId}
 	</update>
 	
@@ -154,7 +178,7 @@
 		</choose>
 	</select>
 	
-<!-- 	카카오페이 관련 -->
+	<!-- 카카오페이 관련 -->
 	<select id="originMaxSchedule" resultType="AccountDto">
 		select account_max_schedule from account where account_id = #{accountId}
 	</select>
@@ -162,6 +186,5 @@
 	<update id="updateMaxSchedule">
 		update account set account_max_schedule = #{accountMaxSchedule} where account_id = #{accountId}
 	</update>
-<!-- 	카카오페이 관련 -->
 
 </mapper>
