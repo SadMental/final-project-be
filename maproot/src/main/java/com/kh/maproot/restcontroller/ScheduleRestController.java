@@ -72,7 +72,7 @@ public class ScheduleRestController {
 		ScheduleDto scheduleDto = ScheduleDto.builder()
 						.scheduleName(scheduleVO.getScheduleName())
 						.scheduleOwner(scheduleVO.getScheduleOwner())
-						.scheduleWtime(Timestamp.valueOf(LocalDateTime.now()))
+						.scheduleWtime(LocalDateTime.now())
 						.scheduleStartDate(scheduleVO.getScheduleStartDate())
 						.scheduleEndDate(scheduleVO.getScheduleEndDate())
 						.build();
