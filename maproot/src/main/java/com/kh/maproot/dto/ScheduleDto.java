@@ -23,8 +23,8 @@ public class ScheduleDto {
     private String scheduleOwner;   // REFERENCES account(account_id)
     private String schedulePublic;  // CHAR(1) 'Y' or 'N'
     private String scheduleState;   // VARCHAR2(20) ('open','close','progress')
-    private Timestamp scheduleWtime; // TIMESTAMP
-    private Timestamp scheduleEtime; // TIMESTAMP
+    private LocalDateTime scheduleWtime; // TIMESTAMP
+    private LocalDateTime scheduleEtime; // TIMESTAMP
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime scheduleStartDate;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
