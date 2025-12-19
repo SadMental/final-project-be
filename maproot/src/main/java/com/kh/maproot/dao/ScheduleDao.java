@@ -25,5 +25,13 @@ public class ScheduleDao {
 		if(scheduleDto == null) throw new TargetNotfoundException();
 		return scheduleDto;
 	}
+	public ScheduleDto selectByScheduleNo(ScheduleDto scheduleDto) {
+		return selectByScheduleNo(scheduleDto.getScheduleNo());
+	}
+
+	public ScheduleDto updateUnit(ScheduleDto scheduleDto) {
+		sqlSession.update("schedule.updateUnit", scheduleDto);
+		 return selectByScheduleNo(scheduleDto.getScheduleNo());
+	}
 
 }

@@ -15,8 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kh.maproot.dto.ScheduleDto;
 import com.kh.maproot.dto.kakaomap.KakaoMapDataWrapperDto;
+import com.kh.maproot.dto.kakaomap.KakaoMapSearchAddressRequestDto;
+import com.kh.maproot.dto.kakaomap.KakaoMapSearchDocument;
 import com.kh.maproot.dto.tmap.TmapResponseDto;
+import com.kh.maproot.schedule.vo.ScheduleInsertDataWrapperVO;
 import com.kh.maproot.service.MapService;
 import com.kh.maproot.vo.TokenVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapGeocoderRequestVO;
@@ -122,14 +126,16 @@ public class KakaoMapRestController {
 	}
 	
 	@PostMapping("/searchAddress")
-	public List<Map<String, Object>> searchAddress(@RequestBody Map<String, Object> searchData) {
+	public List<KakaoMapSearchDocument> searchAddress(@RequestBody KakaoMapSearchAddressRequestDto searchData) {
 		return mapService.getMarkerData(searchData);
 	}
 	
 	@PostMapping("/insertData")
-	public void insertData(@RequestBody KakaoMapDataWrapperDto warpper, @RequestAttribute TokenVO tokenVO) {
+	public ScheduleDto insertData(
+			@RequestBody ScheduleInsertDataWrapperVO warpper,
+			@RequestAttribute TokenVO tokenVO) {
 		
-		mapService.insert(warpper, tokenVO);
+		return mapService.insert(warpper, tokenVO);
 	}
 	
 }

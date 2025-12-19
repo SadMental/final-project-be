@@ -29,5 +29,37 @@
 	select * from schedule where schedule_no = #{scheduleNo}
 </select>
 
+<update id="updateUnit">
+	update schedule
+		<set>
+			<if test="scheduleName != null">
+				schedule_name = #{scheduleName},
+			</if>
+			<if test="scheduleLike != null">
+				schedule_like = #{scheduleLike},
+			</if>
+			<if test="scheduleView != null">
+				schedule_view = #{scheduleView},
+			</if>
+			<if test="scheduleOwner != null">
+				schedule_owner = #{scheduleOwner},
+			</if>
+			<if test="schedulePublic != null">
+				schedule_public = #{schedulePublic},
+			</if>
+			<if test="scheduleState != null">
+				schedule_state = #{scheduleState},
+			</if>
+			<if test="scheduleStartDate != null">
+				schedule_start_date = #{scheduleStartDate},
+			</if>
+			<if test="scheduleEndDate != null">
+				schedule_end_date = #{scheduleEndDate},
+			</if>
+			schedule_etime = systimestamp
+		</set>
+	where schedule_no = #{scheduleNo}
+</update>
+
 
 </mapper>

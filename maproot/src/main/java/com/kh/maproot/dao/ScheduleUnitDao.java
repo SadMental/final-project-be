@@ -6,6 +6,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.kh.maproot.dto.ScheduleDto;
 import com.kh.maproot.dto.ScheduleUnitDto;
 
 import lombok.extern.slf4j.Slf4j;
@@ -39,8 +40,8 @@ public class ScheduleUnitDao {
 		return sqlSession.delete("scheduleUnit.deleteByScheduleNo", scheduleNo) > 0;
 	}
 
-	public List<ScheduleUnitDto> selectList(Long scheduleNo) {
-		List<ScheduleUnitDto> unitList = sqlSession.selectList("scheduleUnit.selectList", scheduleNo);
+	public List<ScheduleUnitDto> selectList(ScheduleDto scheduleDto) {
+		List<ScheduleUnitDto> unitList = sqlSession.selectList("scheduleUnit.selectList", scheduleDto);
 		return unitList.isEmpty()? List.of():unitList;
 	}
 }
