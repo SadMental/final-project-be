@@ -55,12 +55,12 @@ public class ChatRestController {
         if (!"상담사".equals(accountLevel)) {
             throw new TargetNotfoundException("접근 권한이 없습니다.");
         }
-        log.debug("tokenVO2 = {}", tokenVO);
+        //log.debug("tokenVO2 = {}", tokenVO);
         String counselorId = tokenVO.getLoginId();
         
         List<ChatDto> list = chatDao.selectCounselorList(counselorId);
         
-        return chatDao.selectCounselorList(counselorId);
+        return list;
     }
 
     @GetMapping("/{chatNo}")
@@ -69,32 +69,6 @@ public class ChatRestController {
     }
 
     // 채팅방 상태 및 상담원 배정/해제
-//    @PostMapping("/status")
-//    @Transactional
-//    public boolean changeStatus(
-//            @RequestBody ChatDto chatDto,
-//            @RequestAttribute TokenVO tokenVO) {
-//
-//        String loginId = tokenVO.getLoginId();
-//        String loginLevel = tokenVO.getLoginLevel();
-//        log.debug("tokenVO3 = {}", tokenVO);
-//
-//        if ("ACTIVE".equals(chatDto.getChatStatus())) {
-//
-//            if (!"상담사".equals(loginLevel)) {
-//                throw new RuntimeException("상담사만 상담을 시작할 수 있습니다.");
-//            }
-//
-//            chatDto.setChatId(loginId);
-//            chatDto.setChatLevel("상담사");
-//        }
-//        else {
-//            chatDto.setChatId(null);
-//            chatDto.setChatLevel(null);
-//        }
-//
-//        return chatDao.changeStatus(chatDto);
-//    }
     // 태훈 - 서비스를 구현해 서비스만 호출
     @PostMapping("/status")
     public void changeStatus(
@@ -112,6 +86,33 @@ public class ChatRestController {
     		chatService.sendAgentAssigned(chatDto, loginId);
     	}
     	
+    	String status = chatDto.getChatStatus();
+
+    	if ("ACTIVE".equals(status)) {
+            chatService.assignAgent(
+                chatDto.getChatNo(),
+                tokenVO.getLoginId(),
+                tokenVO.getLoginLevel()
+            );
+            return;
+        }
+
+        if ("CLOSED".equals(status)) {
+            chatService.closeChat(
+                chatDto.getChatNo(),
+                tokenVO.getLoginId(),
+                tokenVO.getLoginLevel()
+            );
+            return;
+        }
+
+        throw new IllegalArgumentException("허용되지 않은 상태 변경");
+
+//        chatService.assignAgent(
+//            chatDto.getChatNo(),
+//            tokenVO.getLoginId(),
+//            tokenVO.getLoginLevel()
+//        );
     }
 
     // 채팅방 참여 (party 테이블에 등록)
