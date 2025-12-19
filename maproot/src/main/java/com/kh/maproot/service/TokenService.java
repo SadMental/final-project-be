@@ -9,11 +9,14 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.kh.maproot.configuration.GuestProperies;
 import com.kh.maproot.configuration.JwtProperties;
 import com.kh.maproot.dao.RefreshTokenDao;
 import com.kh.maproot.dto.AccountDto;
+import com.kh.maproot.dto.GuestDto;
 import com.kh.maproot.dto.RefreshTokenDto;
 import com.kh.maproot.error.UnauthorizationException;
+import com.kh.maproot.vo.GuestTokenVO;
 import com.kh.maproot.vo.TokenVO;
 
 import io.jsonwebtoken.Claims;
@@ -25,6 +28,8 @@ public class TokenService {
 	
 	@Autowired
 	private JwtProperties jwtProperties;
+	@Autowired
+	private GuestProperies guestProperies;
 	
 	@Autowired
 	private RefreshTokenDao refreshTokenDao;
@@ -41,6 +46,15 @@ public class TokenService {
 				.accountId(tokenVO.getLoginId())
 				.accountLevel(tokenVO.getLoginLevel())
 			.build());
+	}
+	
+	// 비회원용(게스트) 토큰 발급 ( accessToken만)
+	public String generateGuestAccessToken(GuestDto guestDto) {
+		//[1] 만료시간 설정
+		Date expire = calculateExpireDate(Calendar.HOUR, guestProperies.getExpiration());
+		
+		return createGuest(guestDto, expire);
+		
 	}
 	
 	// 리프레쉬 토큰 발급
@@ -76,6 +90,17 @@ public class TokenService {
 			.build();
 	}
 	
+	//토큰 정보 해석
+	public GuestTokenVO guestParse(String accessToken) {
+		Claims claims = getClaims(accessToken);
+		return GuestTokenVO.builder()
+				.accessToken(accessToken)
+				.guestNo((Number)claims.get("guestNo"))
+				.loginLevel((String)claims.get("loginLevel"))
+				.build();
+	}
+
+	
 	//JWT 토큰의 만료까지 남은 시간을 구하는 기능
 	public long getRemain(String bearerToken) {
 		Claims claims = getClaims(bearerToken);
@@ -107,6 +132,12 @@ public class TokenService {
 	private SecretKey getSecretKey() {
 		return Keys.hmacShaKeyFor(jwtProperties.getKeyStr().getBytes(StandardCharsets.UTF_8));
 	}
+	
+	// guest-sercret-key 생성
+	private SecretKey getGuestSecretKey() {
+		return Keys.hmacShaKeyFor(guestProperies.getKeyStr().getBytes(StandardCharsets.UTF_8));
+	}
+	
 	// Jwt 문자열 생성
 	private String createJwt(AccountDto accountDto,Date expireDate) {
 		return Jwts.builder()
@@ -118,6 +149,20 @@ public class TokenService {
 				.claim("loginLevel", accountDto.getAccountLevel())//정보 추가(key,value)
 				.compact();
 	}
+	
+	//Guest 문자열 생성
+	private String createGuest(GuestDto guestDto, Date expireDate) {
+		return Jwts.builder()
+				.signWith(getGuestSecretKey())
+				.expiration(expireDate)
+				.issuedAt(new Date())
+				.issuer(guestProperies.getIssuer())
+				.claim("guestNo", guestDto.getGuestNo()) // PK
+				.claim("loginLevel", "비회원")
+				.compact();
+				
+	}
+	
 	// 토큰 파싱 및 Claims 추출 로직 (Bearer 제거 + 파싱)
 	private Claims getClaims(String bearerToken) {
 		if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
@@ -133,6 +178,24 @@ public class TokenService {
 				.parseSignedClaims(token) // 최신 jjwt 버전에서는 parseSignedClaims 권장
 				.getPayload();
 	}
+	
+	// 게스트 토큰 파싱
+	private Claims getGuestClaims(String bearerToken) {
+		if(bearerToken == null || !bearerToken.startsWith("Bearer ")) {
+			throw new UnauthorizationException();
+		}
+		
+		String token = bearerToken.substring(7);
+		
+		return Jwts.parser()
+				.verifyWith(getGuestSecretKey())
+				.requireIssuer(guestProperies.getIssuer())
+				.build()
+				.parseSignedClaims(token)
+				.getPayload();
+	}
+	
+	
 	//만료시간 설정
 	private Date calculateExpireDate(int unit, int amount) {//시간(unit), 단위(amount)
 		Calendar c = Calendar.getInstance();
