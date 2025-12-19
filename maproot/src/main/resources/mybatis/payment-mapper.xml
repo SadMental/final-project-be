@@ -45,4 +45,21 @@
 		where payment_no = #{paymentNo}
 	</select>
 <!-- 	카카오페이 관련 -->
+
+<!-- 조회(페이징 + 카운트) -->
+	<select id="countByPaging" resultType="int">
+		select count(*) from payment 
+		where payment_owner = #{paymentOwner}
+	</select>
+	
+	<select id="listByPaging" resultType="PaymentDto">
+		select * from (
+			select rownum rn, TMP.* from (
+				select * from payment 
+				where payment_owner = #{paymentOwner}
+				order by payment_no desc
+			)TMP
+		) where rn between #{begin} and #{end}
+	</select>
+<!-- 조회(페이징 + 카운트) -->
 </mapper>

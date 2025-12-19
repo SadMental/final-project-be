@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kh.maproot.dto.PaymentDto;
+import com.kh.maproot.vo.PageVO;
+import com.kh.maproot.vo.PaymentParamVO;
 import com.kh.maproot.vo.TokenVO;
 
 @Repository
@@ -41,6 +43,18 @@ public class PaymentDao {
 	
 	public PaymentDto whoCancelAll(long paymentNo) {
 		return sqlSession.selectOne("payment.whoCancelAll", paymentNo);
+	}
+	
+	public int count(String paymentOwner) {
+		return sqlSession.selectOne("payment.countByPaging", paymentOwner);
+	}
+	public List<PaymentDto> selectList(PageVO pageVO, String paymentOwner) {
+		PaymentParamVO params = PaymentParamVO.builder()
+				.begin(pageVO.getBegin())
+				.end(pageVO.getEnd())
+				.paymentOwner(paymentOwner)
+				.build(); 
+		return sqlSession.selectList("payment.listByPaging", params);
 	}
 }
 
