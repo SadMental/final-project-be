@@ -1,5 +1,6 @@
 package com.kh.maproot.service;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Array;
 import java.sql.Struct;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.maproot.dao.ScheduleDao;
 import com.kh.maproot.dao.ScheduleMemberDao;
@@ -50,14 +52,16 @@ public class ScheduleService {
 	private ScheduleUnitDao scheduleUnitDao;
 	@Autowired
 	private ScheduleRouteDao scheduleRouteDao;
+	@Autowired
+	private AttachmentService attachmentService;
 	
 	@Transactional
-	public ScheduleDto insert(ScheduleCreateRequestVO scheduleVO) {
+	public ScheduleDto insert(ScheduleCreateRequestVO scheduleVO, MultipartFile attach) throws IllegalStateException, IOException {
 		//일정 등록
 				ScheduleDto scheduleDto = ScheduleDto.builder()
 								.scheduleName(scheduleVO.getScheduleName())
 								.scheduleOwner(scheduleVO.getScheduleOwner())
-								.scheduleWtime(Timestamp.valueOf(LocalDateTime.now()))
+								.scheduleWtime(LocalDateTime.now())
 								.scheduleStartDate(scheduleVO.getScheduleStartDate())
 								.scheduleEndDate(scheduleVO.getScheduleEndDate())
 								.build();
@@ -85,6 +89,12 @@ public class ScheduleService {
 					.build();
 				
 				scheduleMemberDao.insert(scheduleMemberDto);
+				
+				// 프로필 이미지 추가(insert이후) 
+				if(attach != null && attach.isEmpty() == false){
+					Long attachmentNo = attachmentService.save(attach);
+					scheduleDao.connect(sequence, attachmentNo);
+				}
 				
 				return scheduleDto;
 	}
@@ -211,10 +221,45 @@ public class ScheduleService {
 			voList.add(scheduleListResponseVO);
 			
 		}
-		
 		//검색된 일정들 VO로 전송
-		
 		return voList;
+	}
+	
+	// 전체 일정 조회 (오버로딩)
+	@Transactional
+	public List<ScheduleListResponseVO> loadScheduleList() {
+	    // 1. 전체 일정 목록 가져오기 (공개만)
+	    List<ScheduleDto> list = scheduleDao.selectAllList(); 
+	    
+	    List<ScheduleListResponseVO> voList = new ArrayList<>(); 
+	    
+	    for(ScheduleDto scheduleDto : list) {
+	        
+	        Long scheduleNo = scheduleDto.getScheduleNo(); // DTO에서 바로 꺼냄
+	        
+	        ScheduleUnitDto unitFirst = scheduleUnitDao.selectFirstUnit(scheduleNo);
+	        Integer unitCount = scheduleUnitDao.selectUnitCount(scheduleNo);
+	        Integer memberCount = scheduleMemberDao.selectMemberCount(scheduleNo);
+	        
+	        Long attachmentNo = scheduleDao.findAttach(scheduleNo); 
+	        
+	        ScheduleListResponseVO scheduleListResponseVO = ScheduleListResponseVO.builder()
+	                .scheduleNo(scheduleDto.getScheduleNo())
+	                .scheduleName(scheduleDto.getScheduleName())
+	                .scheduleState(scheduleDto.getScheduleState())
+	                .schedulePublic(scheduleDto.getSchedulePublic())
+	                .scheduleOwner(scheduleDto.getScheduleOwner())
+	                .scheduleStartDate(scheduleDto.getScheduleStartDate())
+	                .scheduleEndDate(scheduleDto.getScheduleEndDate())
+	                .unitFirst(unitFirst)
+	                .unitCount(unitCount == null ? 0 : unitCount)
+	                .memberCount(memberCount == null ? 0 : memberCount)
+	                .scheduleImage(attachmentNo != null ? String.valueOf(attachmentNo) : null) 
+	                .build();
+	        
+	        voList.add(scheduleListResponseVO);
+	    }
+	    return voList;
 	}
 
 }

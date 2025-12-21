@@ -1,5 +1,6 @@
 package com.kh.maproot.restcontroller;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Array;
 import java.sql.Struct;
@@ -15,11 +16,15 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.kh.maproot.aop.AccountInterceptor;
 import com.kh.maproot.dao.ScheduleDao;
 import com.kh.maproot.dao.ScheduleMemberDao;
@@ -65,6 +70,7 @@ public class ScheduleRestController {
 	private TokenService tokenService;
 	@Autowired
 	private ShareLinkDao shareLinkDao;
+	@Autowired
 	private ScheduleService scheduleService;
 
 	
@@ -74,9 +80,11 @@ public class ScheduleRestController {
 	}
 	
 	@PostMapping("/insert")
-	public ScheduleDto insert(@RequestBody ScheduleCreateRequestVO scheduleVO) {
+	public ScheduleDto insert(
+			@ModelAttribute ScheduleCreateRequestVO scheduleVO,
+			@RequestParam(required = false) MultipartFile attach) throws IllegalStateException, IOException {
 		
-		return scheduleService.insert(scheduleVO);
+		return scheduleService.insert(scheduleVO, attach);
 	}
 	
 	@GetMapping("/list/{accountId}")
@@ -116,10 +124,15 @@ public class ScheduleRestController {
 		return shareKey;
 	}
 
-
 	@PostMapping("/detail")
 	public ScheduleInsertDataWrapperVO detail(@RequestBody ScheduleDto scheduleDto) throws Exception{
 		
 	    return scheduleService.loadScheduleData(scheduleDto);
+	}
+	
+	// 전체 일정 목록
+	@GetMapping("/")
+	public List<ScheduleListResponseVO> listAll(){
+		return scheduleService.loadScheduleList();
 	}
 }

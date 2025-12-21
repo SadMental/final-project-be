@@ -5,61 +5,80 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="schedule">
 
-<select id="sequence" resultType="long">
-	select schedule_seq.nextval from dual
-</select>
-
-<insert id="insert">
-	insert into schedule(
-		schedule_no, schedule_name, 
-		schedule_owner,schedule_start_date
-		<if test="scheduleEndDate != null">
-		,schedule_end_date    
-		</if>
-	) values(
-		#{scheduleNo}, #{scheduleName},
-		#{scheduleOwner}, #{scheduleStartDate}
-		<if test="scheduleEndDate != null">
-		,#{scheduleEndDate}
-		</if>
-	)
-</insert>
-
-<select id="selectByScheduleNo" resultType="ScheduleDto">
-	select * from schedule where schedule_no = #{scheduleNo}
-</select>
-
-<update id="updateUnit">
-	update schedule
-		<set>
-			<if test="scheduleName != null">
-				schedule_name = #{scheduleName},
-			</if>
-			<if test="scheduleLike != null">
-				schedule_like = #{scheduleLike},
-			</if>
-			<if test="scheduleView != null">
-				schedule_view = #{scheduleView},
-			</if>
-			<if test="scheduleOwner != null">
-				schedule_owner = #{scheduleOwner},
-			</if>
-			<if test="schedulePublic != null">
-				schedule_public = #{schedulePublic},
-			</if>
-			<if test="scheduleState != null">
-				schedule_state = #{scheduleState},
-			</if>
-			<if test="scheduleStartDate != null">
-				schedule_start_date = #{scheduleStartDate},
-			</if>
+	<select id="sequence" resultType="long">
+		select schedule_seq.nextval from dual
+	</select>
+	
+	<insert id="insert">
+		insert into schedule(
+			schedule_no, schedule_name, 
+			schedule_owner,schedule_start_date
 			<if test="scheduleEndDate != null">
-				schedule_end_date = #{scheduleEndDate},
+			,schedule_end_date    
 			</if>
-			schedule_etime = systimestamp
-		</set>
-	where schedule_no = #{scheduleNo}
-</update>
+		) values(
+			#{scheduleNo}, #{scheduleName},
+			#{scheduleOwner}, #{scheduleStartDate}
+			<if test="scheduleEndDate != null">
+			,#{scheduleEndDate}
+			</if>
+		)
+	</insert>
+	
+	<select id="selectByScheduleNo" resultType="ScheduleDto">
+		select * from schedule where schedule_no = #{scheduleNo}
+	</select>
+	
+	<update id="updateUnit">
+		update schedule
+			<set>
+				<if test="scheduleName != null">
+					schedule_name = #{scheduleName},
+				</if>
+				<if test="scheduleLike != null">
+					schedule_like = #{scheduleLike},
+				</if>
+				<if test="scheduleView != null">
+					schedule_view = #{scheduleView},
+				</if>
+				<if test="scheduleOwner != null">
+					schedule_owner = #{scheduleOwner},
+				</if>
+				<if test="schedulePublic != null">
+					schedule_public = #{schedulePublic},
+				</if>
+				<if test="scheduleState != null">
+					schedule_state = #{scheduleState},
+				</if>
+				<if test="scheduleStartDate != null">
+					schedule_start_date = #{scheduleStartDate},
+				</if>
+				<if test="scheduleEndDate != null">
+					schedule_end_date = #{scheduleEndDate},
+				</if>
+				schedule_etime = systimestamp
+			</set>
+		where schedule_no = #{scheduleNo}
+	</update>
+	
+	<!-- 일정 대표이미지 -->
+	<insert id="connect">
+		insert into schedule_profile(schedule_no, attachment_no) 
+		values(
+			#{scheduleNo}, #{attachmentNo}
+		)
+	</insert>
+	<select id="findAttach" resultType="long">
+		select attachment_no from schedule_profile 
+		where schedule_no = #{scheduleNo}
+	</select>
+	
+	<!-- 공개된 전체 일정 -->
+	<select id="selectAllList" resultType="ScheduleDto">
+		select * from schedule 
+		where schedule_public = 'Y' order by schedule_no desc
+	</select>
+
 
 
 </mapper>
