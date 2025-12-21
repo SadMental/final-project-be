@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import com.kh.maproot.dto.ScheduleDto;
 import com.kh.maproot.error.TargetNotfoundException;
+import com.kh.maproot.schedule.vo.ScheduleListResponseVO;
 
 @Repository
 public class ScheduleDao {
@@ -50,9 +51,8 @@ public class ScheduleDao {
 		return sqlSession.selectOne("schedule.findAttach", scheduleNo);
 	}
 	
-	// 공개된 일정 리스트
-	public List<ScheduleDto> selectAllList(){
-		return sqlSession.selectList("schedule.selectAllList");
+	public List<ScheduleListResponseVO> selectScheduleList(String accountId) {
+	    return sqlSession.selectList("schedule.selectScheduleList", accountId);
 	}
 	
 

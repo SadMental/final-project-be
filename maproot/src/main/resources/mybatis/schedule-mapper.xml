@@ -73,11 +73,56 @@
 		where schedule_no = #{scheduleNo}
 	</select>
 	
-	<!-- 공개된 전체 일정 -->
-	<select id="selectAllList" resultType="ScheduleDto">
-		select * from schedule 
-		where schedule_public = 'Y' order by schedule_no desc
-	</select>
+	<!-- 일정 조회 통합 -->
+	 <select id="selectScheduleList" resultType="com.kh.maproot.schedule.vo.ScheduleListResponseVO">
+        SELECT 
+            S.schedule_no, 
+            S.schedule_name, 
+            S.schedule_state, 
+            S.schedule_public, 
+            S.schedule_start_date, 
+            S.schedule_end_date, 
+            S.schedule_owner,
+            SP.attachment_no as scheduleImage,
+            (SELECT count(*) FROM schedule_member M WHERE M.schedule_no = S.schedule_no) as memberCount, 
+            (SELECT count(*) FROM schedule_unit U WHERE U.schedule_no = S.schedule_no) as unitCount, 
+            U.schedule_unit_content as unitFirst,
+            T.tags
+        FROM schedule S 
+        <if test="accountId != null and accountId != ''">
+            JOIN schedule_member SM ON S.schedule_no = SM.schedule_no
+        </if>
+        LEFT JOIN schedule_profile SP ON S.schedule_no = SP.schedule_no 
+        LEFT JOIN (
+            SELECT schedule_no, schedule_unit_content
+            FROM (
+                SELECT schedule_no, schedule_unit_content,
+                       ROW_NUMBER() OVER(PARTITION BY schedule_no ORDER BY schedule_unit_no ASC) as rn
+                FROM schedule_unit
+            )
+            WHERE rn = 1
+        ) U ON S.schedule_no = U.schedule_no
+        LEFT JOIN (
+            SELECT schedule_no, 
+                   LISTAGG(tag_name, ',') WITHIN GROUP (ORDER BY tag_name) as tags
+            FROM schedule_tag
+            GROUP BY schedule_no
+        ) T ON S.schedule_no = T.schedule_no
+        <where>
+            <!-- Case 1: 계정 ID가 들어왔을 때 (내 일정 - 종료 여부 상관없이 다 보임) -->
+            <if test="accountId != null and accountId != ''">
+                AND SM.account_id = #{accountId}
+            </if>
+            
+            <!-- Case 2: 계정 ID가 없을 때 (전체 공개 일정 - 종료된 것만 보임) -->
+            <if test="accountId == null or accountId == ''">
+                AND S.schedule_public = 'Y'
+                <!-- [추가] 종료일이 현재시간보다 이전인 것만 조회 (여행 끝난 것만 공개) -->
+                AND S.schedule_end_date &lt; SYSDATE
+            </if>
+        </where>
+        ORDER BY S.schedule_no DESC
+    </select>
 
 
 

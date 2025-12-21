@@ -187,79 +187,14 @@ public class ScheduleService {
 	    return path;
 	}
 	
-	@Transactional
-	public List<ScheduleListResponseVO> loadScheduleList(String accountId) {
-		List<ScheduleMemberDto> list = scheduleMemberDao.selectByAccountId(accountId);
-		
-		//일정 내용 찾기 (찾은 dto의 pk로 검색)
-
-		List<ScheduleListResponseVO> voList = new ArrayList<>(); 
-		
-		for(ScheduleMemberDto scheduleMemberDto : list) {
-			
-			Long scheduleNo = scheduleMemberDto.getScheduleNo();
-			
-			ScheduleDto findScheduleDto = scheduleDao.selectByScheduleNo(scheduleNo);
-			ScheduleUnitDto unitFirst = scheduleUnitDao.selectFirstUnit(scheduleNo);
-			Integer unitCount = scheduleUnitDao.selectUnitCount(scheduleNo);
-			Integer memberCount = scheduleMemberDao.selectMemberCount(scheduleNo);
-			
-			ScheduleListResponseVO scheduleListResponseVO = ScheduleListResponseVO.builder()
-					.scheduleNo(scheduleMemberDto.getScheduleNo())
-					.scheduleName(findScheduleDto.getScheduleName())
-					.scheduleState(findScheduleDto.getScheduleState())
-					.schedulePublic(findScheduleDto.getSchedulePublic())
-					.scheduleOwner(findScheduleDto.getScheduleOwner())
-					.scheduleStartDate(findScheduleDto.getScheduleStartDate())
-					.scheduleEndDate(findScheduleDto.getScheduleEndDate())
-					.unitFirst(unitFirst)
-					.unitCount(unitCount)
-					.memberCount(memberCount)
-					.scheduleImage("공란")
-					.build();
-			
-			voList.add(scheduleListResponseVO);
-			
-		}
-		//검색된 일정들 VO로 전송
-		return voList;
-	}
-	
-	// 전체 일정 조회 (오버로딩)
-	@Transactional
+	// 1. 전체 공개 일정 (파라미터 없이 호출 -> null 전달)
 	public List<ScheduleListResponseVO> loadScheduleList() {
-	    // 1. 전체 일정 목록 가져오기 (공개만)
-	    List<ScheduleDto> list = scheduleDao.selectAllList(); 
-	    
-	    List<ScheduleListResponseVO> voList = new ArrayList<>(); 
-	    
-	    for(ScheduleDto scheduleDto : list) {
-	        
-	        Long scheduleNo = scheduleDto.getScheduleNo(); // DTO에서 바로 꺼냄
-	        
-	        ScheduleUnitDto unitFirst = scheduleUnitDao.selectFirstUnit(scheduleNo);
-	        Integer unitCount = scheduleUnitDao.selectUnitCount(scheduleNo);
-	        Integer memberCount = scheduleMemberDao.selectMemberCount(scheduleNo);
-	        
-	        Long attachmentNo = scheduleDao.findAttach(scheduleNo); 
-	        
-	        ScheduleListResponseVO scheduleListResponseVO = ScheduleListResponseVO.builder()
-	                .scheduleNo(scheduleDto.getScheduleNo())
-	                .scheduleName(scheduleDto.getScheduleName())
-	                .scheduleState(scheduleDto.getScheduleState())
-	                .schedulePublic(scheduleDto.getSchedulePublic())
-	                .scheduleOwner(scheduleDto.getScheduleOwner())
-	                .scheduleStartDate(scheduleDto.getScheduleStartDate())
-	                .scheduleEndDate(scheduleDto.getScheduleEndDate())
-	                .unitFirst(unitFirst)
-	                .unitCount(unitCount == null ? 0 : unitCount)
-	                .memberCount(memberCount == null ? 0 : memberCount)
-	                .scheduleImage(attachmentNo != null ? String.valueOf(attachmentNo) : null) 
-	                .build();
-	        
-	        voList.add(scheduleListResponseVO);
-	    }
-	    return voList;
+	    return scheduleDao.selectScheduleList(null);
+	}
+
+	// 2. 특정 회원 일정 (ID 전달)
+	public List<ScheduleListResponseVO> loadScheduleList(String accountId) {
+	    return scheduleDao.selectScheduleList(accountId);
 	}
 
 }
