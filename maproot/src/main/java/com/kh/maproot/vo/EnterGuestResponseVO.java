@@ -9,5 +9,9 @@ import lombok.NoArgsConstructor;
 public class EnterGuestResponseVO {
 	
 	private String guestKey;
+	private String accessToken;
+	private Number guestNo;
+	private String loginLevel;
+	private String guestNickname;
 
 }

@@ -27,4 +27,8 @@ public class GuestDao {
 	public boolean update(GuestDto guestDto) {
 		return sqlSession.update("guest.update", guestDto) > 0;
 	}
+	
+	public GuestDto selectByGuestNo(int guestNo) {
+		return sqlSession.selectOne("guest.selectOne", guestNo);
+	}
 }

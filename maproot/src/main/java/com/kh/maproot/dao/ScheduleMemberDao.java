@@ -33,6 +33,7 @@ public class ScheduleMemberDao {
 	}
 	
 	public List<ScheduleMemberDto> selectByScheduleNo(Long scheduleNo) {
+	System.out.println("selectByScheduleNo dao 진입 => scheduleNo = "+ scheduleNo);
 		Map<String, Object> params = new HashMap<>();
 		params.put("scheduleNo", scheduleNo);
 		

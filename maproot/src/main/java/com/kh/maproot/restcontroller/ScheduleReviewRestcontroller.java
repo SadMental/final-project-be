@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,15 +17,20 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.kh.maproot.configuration.EncryptConfiguration;
+import com.kh.maproot.dao.AccountDao;
+import com.kh.maproot.dao.GuestDao;
 import com.kh.maproot.dao.ReviewDao;
 import com.kh.maproot.dao.ReviewUnitLinkDao;
 import com.kh.maproot.dao.ScheduleDao;
 import com.kh.maproot.dao.ScheduleMemberDao;
 import com.kh.maproot.dao.ScheduleUnitDao;
 import com.kh.maproot.dao.reviewScheduleLinkDao;
+import com.kh.maproot.dto.AccountDto;
+import com.kh.maproot.dto.GuestDto;
 import com.kh.maproot.dto.ReviewDto;
 import com.kh.maproot.dto.ReviewUnitLinkDto;
 import com.kh.maproot.dto.ScheduleDto;
@@ -33,6 +39,10 @@ import com.kh.maproot.dto.ScheduleUnitDto;
 import com.kh.maproot.schedule.vo.ReviewRequestVO;
 import com.kh.maproot.schedule.vo.ReviewResponseVO;
 import com.kh.maproot.schedule.vo.ReviewScheduleLinkVO;
+import com.kh.maproot.service.TokenService;
+import com.kh.maproot.vo.GuestTokenVO;
+import com.kh.maproot.vo.TokenVO;
+
 import org.springframework.web.bind.annotation.RequestParam;
 
 
@@ -55,6 +65,12 @@ public class ScheduleReviewRestcontroller {
 	private ScheduleUnitDao scheduleUnitDao;
 	@Autowired
 	private ScheduleMemberDao scheduleMemberDao;
+	@Autowired
+	private TokenService tokenService;
+	@Autowired
+	private AccountDao accountDao;
+	@Autowired
+	private GuestDao guestDao;
 
     ScheduleReviewRestcontroller(EncryptConfiguration encryptConfiguration) {
         this.encryptConfiguration = encryptConfiguration;
@@ -91,6 +107,7 @@ public class ScheduleReviewRestcontroller {
 	        System.out.println(row);
 	        // 4) 세부 일정 번호가 있으면 리스트에 추가
 	        Integer unitNo = row.getScheduleUnitNo();
+	        System.out.println("행확인"+row);
 	        if (unitNo != null) { // null 아니면
 	            vo.getScheduleUnitNoList().add(unitNo);
 	        }
@@ -102,22 +119,38 @@ public class ScheduleReviewRestcontroller {
 	
 	
 	
+	
+	
 	@PostMapping("/insert")
-	public ReviewDto insert(@RequestBody ReviewRequestVO reviewRequestVO ) {
-		
-		//유저인지, 게스트인지 확인 필요(유저 정보는 백엔드에서 해결)
-		
-
+	public ReviewDto insert(
+			@RequestBody ReviewRequestVO reviewRequestVO,
+			@RequestHeader(value = "Authorization", required = false) String authorization
+			) {
+		 
 
 		//댓글 등록 (추후 사진 이미지 추가 필요)
 		ReviewDto reviewDto = ReviewDto.builder()
 				.scheduleNo(reviewRequestVO.getScheduleNo())
-				.reviewWriterType("USER")
-				.accountId("testuser1")
-				.reviewWriterNickname("테스트유저1")
 				.reviewContent(reviewRequestVO.getReviewContent())
 				.reviewWtime(Timestamp.valueOf(LocalDateTime.now()))
 				.build();
+		
+		//유저인지, 게스트인지 확인 필요(유저 정보는 백엔드에서 해결)
+		try { //게스트 토큰 먼저 시도
+			System.out.println("게스트토큰확인");
+			GuestTokenVO guestTokenVO = tokenService.guestParse(authorization);
+			reviewDto.setReviewWriterType("GUEST");
+			reviewDto.setAccountId(null);
+			GuestDto findDto = guestDao.selectByGuestNo(guestTokenVO.getGuestNo().intValue());		
+			reviewDto.setReviewWriterNickname(findDto.getGuestNickname());
+		} catch (Exception e) {
+			System.out.println("회원토큰확인");
+			TokenVO tokenVO = tokenService.parse(authorization);
+			reviewDto.setReviewWriterType("USER");
+			reviewDto.setAccountId(tokenVO.getLoginId());
+			AccountDto findDto = accountDao.selectOne(tokenVO.getLoginId());
+			reviewDto.setReviewWriterNickname(findDto.getAccountNickname());
+		}
 							
 				int sequence = reviewDao.insert(reviewDto);
 				reviewDto.setReviewNo(sequence);
@@ -133,8 +166,10 @@ public class ScheduleReviewRestcontroller {
 		reviewDao.delete(reviewNo);
 	}
 	
+	//댓글 수정
 	@PatchMapping("/{reviewNo}")
-	public boolean update(@PathVariable int reviewNo ,@RequestBody ReviewDto reviewDto) {
+	public boolean update(
+			@PathVariable int reviewNo ,@RequestBody ReviewDto reviewDto) {
 		reviewDto.setReviewNo(reviewNo);
 		return reviewDao.update(reviewDto);
 	}
@@ -145,6 +180,12 @@ public class ScheduleReviewRestcontroller {
 		System.out.println(reviewNo);
 		System.out.println(reviewUnitLinkDao.selectByReviewNo(reviewNo));
 		return reviewUnitLinkDao.selectByReviewNo(reviewNo);
+	}
+	
+	@GetMapping("/unit/list/{scheduleNo}")
+	public List<ScheduleUnitDto> scheduleUnitList(@PathVariable long scheduleNo) {
+		ScheduleDto findDto = scheduleDao.selectByScheduleNo(scheduleNo);
+	    return scheduleUnitDao.selectList(findDto);
 	}
 	
 	//세부 일정 삭제
