@@ -28,7 +28,7 @@ public class InterceptorConfiguration implements WebMvcConfigurer{
                          "/message/**",
                         "/kakaoMap/**",
                          "/account/withdraw",
-                         "/schedult/insert"
+                         "/schedule/insert"
                     )
                     .excludePathPatterns(
 
@@ -41,7 +41,10 @@ public class InterceptorConfiguration implements WebMvcConfigurer{
                             "/account/login",
                             "/account/logout",
                             "/ws",
-                            "/websocket/**"
+                            "/websocket/**",
+                            "/schedule/detail",
+                            "/share/**",
+                            "/review/**"
                             );
     }
 }

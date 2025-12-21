@@ -65,6 +65,7 @@ public class ScheduleRestController {
 	private TokenService tokenService;
 	@Autowired
 	private ShareLinkDao shareLinkDao;
+	@Autowired
 	private ScheduleService scheduleService;
 
 	
