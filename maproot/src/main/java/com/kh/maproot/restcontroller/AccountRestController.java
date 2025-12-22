@@ -236,4 +236,11 @@ public class AccountRestController {
 		
 		accountService.drop(loginId, rawPassword);
 	}
+	
+	@PostMapping("/dropAdmin")
+	public void dropAdmin(
+			@RequestAttribute TokenVO tokenVO,
+			@RequestBody AccountDto accountDto) {
+		accountService.dropAdmin(accountDto.getAccountId(), tokenVO);
+	}
 }

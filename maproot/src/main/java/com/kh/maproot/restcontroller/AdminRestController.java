@@ -100,6 +100,7 @@ public class AdminRestController {
 	
 	@PostMapping("/payment/list")
 	public PaymentListVO payment(@RequestBody PaymentSearchVO searchVO, @RequestAttribute TokenVO tokenVO){
+		log.debug("searchVO = {}", searchVO);
 		PageVO pageVO = new PageVO();
 		pageVO.setPage(searchVO.getPage());
 		pageVO.setSize(10);
