@@ -137,4 +137,32 @@ public class AccountService {
 		
 		return true;
 	}
+
+	
+	// 프로필 변경
+	public void updateProfileImage(String loginId, MultipartFile attach) throws IllegalStateException, IOException {
+		if(attach.isEmpty()) return;
+		
+		// 1. 기존 파일을 조회
+		AccountDto accountDto = accountDao.selectOne(loginId);
+		if(accountDto == null) throw new TargetNotfoundException();
+		
+		// 2. 있던 파일을 삭제
+		Long originAttachmentNo = accountDao.findAttach(loginId);
+		if(originAttachmentNo != null) {
+			try {
+				attachmentService.delete(originAttachmentNo);
+			}
+			catch (TargetNotfoundException e) {
+				log.warn("기존 프로필 삭제 중 파일 없음: {}", originAttachmentNo);
+			}
+		}
+		
+		// 3. 새로 save
+		Long attachmentNo = attachmentService.save(attach);
+		
+		// 4. DB 연결
+		accountDao.connect(loginId, attachmentNo);
+	}
+	
 }

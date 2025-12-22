@@ -32,7 +32,8 @@ public class InterceptorConfiguration implements WebMvcConfigurer{
                          "/schedule/insert",
                          "/admin/**",
                          "/account/scheduleLike/**",
-                         "/account/dropAdmin"
+                         "/account/dropAdmin",
+                         "/account/profile"
                     )
                     .excludePathPatterns(
 
