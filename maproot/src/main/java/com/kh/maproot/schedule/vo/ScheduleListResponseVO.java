@@ -1,12 +1,8 @@
 package com.kh.maproot.schedule.vo;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.kh.maproot.dto.ScheduleDto;
-import com.kh.maproot.dto.ScheduleMemberDto;
 import com.kh.maproot.dto.ScheduleUnitDto;
 
 import lombok.AllArgsConstructor;
@@ -18,7 +14,10 @@ import lombok.NoArgsConstructor;
 
 public class ScheduleListResponseVO {
 	
-	 private Long scheduleNo;
+	
+	
+	
+	  private Long scheduleNo;
 	  private String scheduleName;
 	  private String scheduleState;   // open/close/progress
 	  private String schedulePublic;  // Y/N
@@ -32,5 +31,9 @@ public class ScheduleListResponseVO {
 	  private Integer unitCount;     // 세부일정 개수
 	  private Integer memberCount;   // 참여자 수
 	  private String scheduleImage;   // 대표 이미지
+	  
+	  // 태그 추가
+	  private String tags;
+	  
     
 }

@@ -43,4 +43,12 @@
     )
 </insert>
 
+<select id="exists" resultType="int">
+  select case when count(*) > 0 then 1 else 0 end
+  from schedule_member
+  where schedule_no = #{scheduleNo}
+    and account_id = #{accountId}
+</select>
+
+
 </mapper>

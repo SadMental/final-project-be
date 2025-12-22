@@ -18,14 +18,8 @@
 </insert>
 
 <select id="select" resultType="GuestDto">
-
-	select * from guest
-	<where>
-		<if test="guestKey != null">
-		and guest_key = #{guestKey}
-		</if>
-	</where>
-
+  select * from guest
+  where guest_key = #{guestKey}
 </select>
 
 <update id="update">
@@ -44,6 +38,14 @@
     </set>
     WHERE guest_no = #{guestNo}
 </update>
+
+<select id="selectOne" resultType="GuestDto">
+	select * from guest where guest_no = #{guestNo}
+</select>
+
+<select id="selectByNickname" resultType="int">
+	select * from guest where guest_nickname = #{guestNickname}
+</select>
 	
 	
 </mapper>

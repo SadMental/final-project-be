@@ -1,5 +1,7 @@
 package com.kh.maproot.dao;
 
+import java.util.List;
+
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -26,5 +28,17 @@ public class GuestDao {
 
 	public boolean update(GuestDto guestDto) {
 		return sqlSession.update("guest.update", guestDto) > 0;
+	}
+	
+	public GuestDto selectByGuestNo(int guestNo) {
+		return sqlSession.selectOne("guest.selectOne", guestNo);
+	}
+	
+	//중복검사
+	public boolean selectByNickname(String guestNickname) {
+		  GuestDto guest = sqlSession.selectOne(
+			        "guest.selectByNickname", guestNickname
+			    );
+			    return guest != null;
 	}
 }

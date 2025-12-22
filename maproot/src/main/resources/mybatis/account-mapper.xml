@@ -47,6 +47,11 @@
 		select count(*) from account where account_email = #{accountEmail}
 	</select>
 	
+	<!-- Paging을 위한 Count -->
+	<select id="count" resultType="int">
+		select count(*) from account
+	</select>
+	
 	<!-- 회원의 로그인 시간 업데이트 -->
 	<update id="updateLoginTime">
 		update account 
@@ -108,59 +113,86 @@
 	
 	
 	<!-- 관리자용 복합검색 -->
-	<select id="complexSearch" resultType="AccountDto">
-		select * from account 
-			<where>
-				<!-- 관리자 확인용 구문 추가 -->
-				and #{loginLevel} = '관리자'
-				<!-- 아이디 : 유사 검색-->
-				<if test="accountId != null">
-					and instr(account_id, #{accountId}) > 0 
-				</if>
-				<!-- 닉네임 : 유사 검색  -->
-				<if test="accountNickname != null">
-					and instr(account_nickname, #{accountNickname}) > 0 
-				</if>
-				<!-- 이메일 : 유사 검색 -->
-				<if test="accountEmail != null">
-					and instr(account_email, #{accountEmail}) > 0 
-				</if>
-				<!-- 전화번호 : 유사 검색(starts with) -->
-				<if test="accountContact != null">
-					and account_contact like #{accountContact} || '%' 
-				</if>
-				<if test="accountBirth != null">
-					and account_birth = #{accountBirth}
-				</if>
-				<!-- 가입일 : 구간 검색 -->
-				<choose>
-					<when test="beginAccountJoin != null and endAccountJoin != null">
-						and account_join between 
-							to_timestamp(#{beginAccountJoin} || '00:00:00.000', 'yyyy-mm-dd hh24:mi:ss.ff3') 
-							and 
-							to_timestamp(#{endAccountJoin} || '00:00:00.000', 'yyyy-mm-dd hh24:mi:ss.ff3')
-					</when>
-					<when test="beginAccountJoin != null">
-						<![CDATA[and account_join >= to_timestamp(#{beginAccountJoin} || ' 00:00:00.000', 'yyyy-mm-dd hh24:mi:ss.ff3)]]>
-					</when>
-					<when test="endAccountJoin != null">
-						<![CDATA[and account_join <= to_timestamp(#{endAccountJoin} || ' 00:00:00.000', 'yyyy-mm-dd hh24:mi:ss.ff3)]]>
-					</when>
-				</choose>
-				<!-- 일정 갯수 : 구간 검색 -->
-				<choose>
-					<when test="minScheduleQty != null and maxScheduleQty != null">
-						and account_max_schedule between #{minScheduleQty} and #{maxScheduleQty} 
-					</when>
-					<when test="minScheduleQty != null">
-						<![CDATA[and account_max_schedule >= #{minScheduleQty}]]>
-					</when>
-					<when test="maxScheduleQty != null">
-						<![CDATA[and account_max_schedule <= #{minScheduleQty}]]>
-					</when>
-				</choose>
-			</where>
-			order by account_join desc
+	<sql id="accountSearch">
+	    <where>
+	        <if test="accountComplexSearchVO.accountId != null">
+	            AND instr(A.account_id, #{accountComplexSearchVO.accountId}) > 0 
+	        </if>
+	        <if test="accountComplexSearchVO.accountNickname != null">
+	            AND instr(A.account_nickname, #{accountComplexSearchVO.accountNickname}) > 0 
+	        </if>
+	        <if test="accountComplexSearchVO.accountEmail != null">
+	            AND instr(A.account_email, #{accountComplexSearchVO.accountEmail}) > 0 
+	        </if>
+	        <if test="accountComplexSearchVO.accountContact != null">
+	            AND A.account_contact LIKE #{accountComplexSearchVO.accountContact} || '%' 
+	        </if>
+	        <if test="accountComplexSearchVO.accountBirth != null">
+	            AND A.account_birth = #{accountComplexSearchVO.accountBirth}
+	        </if>
+	        
+	        <choose>
+	            <when test="accountComplexSearchVO.beginAccountJoin != null and accountComplexSearchVO.endAccountJoin != null">
+	                AND A.account_join BETWEEN 
+	                    to_timestamp(#{accountComplexSearchVO.beginAccountJoin} || ' 00:00:00.000', 'yyyy-mm-dd hh24:mi:ss.ff3') 
+	                    AND 
+	                    to_timestamp(#{accountComplexSearchVO.endAccountJoin} || ' 23:59:59.999', 'yyyy-mm-dd hh24:mi:ss.ff3')
+	            </when>
+	            <when test="accountComplexSearchVO.beginAccountJoin != null">
+	                AND A.account_join <![CDATA[ >= ]]> to_timestamp(#{accountComplexSearchVO.beginAccountJoin} || ' 00:00:00.000', 'yyyy-mm-dd hh24:mi:ss.ff3')
+	            </when>
+	            <when test="accountComplexSearchVO.endAccountJoin != null">
+	                AND A.account_join <![CDATA[ <= ]]> to_timestamp(#{accountComplexSearchVO.endAccountJoin} || ' 23:59:59.999', 'yyyy-mm-dd hh24:mi:ss.ff3')
+	            </when>
+	        </choose>
+	
+	        <choose>
+	            <when test="accountComplexSearchVO.minSchedule != null and accountComplexSearchVO.maxSchedule != null">
+	                AND A.account_max_schedule BETWEEN #{accountComplexSearchVO.minSchedule} AND #{accountComplexSearchVO.maxSchedule} 
+	            </when>
+	            <when test="accountComplexSearchVO.minSchedule != null">
+	                AND A.account_max_schedule <![CDATA[ >= ]]> #{accountComplexSearchVO.minSchedule}
+	            </when>
+	            <when test="accountComplexSearchVO.maxSchedule != null">
+	                AND A.account_max_schedule <![CDATA[ <= ]]> #{accountComplexSearchVO.maxSchedule}
+	            </when>
+	        </choose>
+	
+	        <if test="accountComplexSearchVO.minScheduleCount != null">
+	            AND (SELECT COUNT(*) FROM schedule S WHERE S.schedule_owner = A.account_id) <![CDATA[ >= ]]> #{accountComplexSearchVO.minScheduleCount}
+	        </if>
+	        <if test="accountComplexSearchVO.maxScheduleCount != null">
+	            AND (SELECT COUNT(*) FROM schedule S WHERE S.schedule_owner = A.account_id) <![CDATA[ <= ]]> #{accountComplexSearchVO.maxScheduleCount}
+	        </if>
+	        <if test="accountComplexSearchVO.accountLevelList != null and accountComplexSearchVO.accountLevelList.size() > 0">
+				<!-- item(변수명), collection(저장소), separator(구분자) -->
+				<foreach collection="accountComplexSearchVO.accountLevelList" item="accountLevel"
+									separator="," open="and account_level in (" close=")">
+					#{accountLevel}
+				</foreach>
+ 			</if>
+	    </where>
+	</sql>
+	
+	<select id="complexSearch" resultType="AccountForAdminVO">
+	    SELECT * FROM (
+	        SELECT ROWNUM AS rn, TMP.* FROM (
+	            SELECT 
+	                A.account_id, A.account_nickname, A.account_email,
+	                A.account_contact, A.account_level, A.account_join,
+	                A.account_login, A.account_max_schedule, A.account_birth,
+	                (SELECT COUNT(*) FROM schedule S WHERE S.schedule_owner = A.account_id) AS schedule_count
+	            FROM account A
+	            <include refid="accountSearch" />
+	            ORDER BY A.account_join DESC
+	        ) TMP
+	        WHERE ROWNUM <![CDATA[ <= ]]> #{end}
+	    ) WHERE rn <![CDATA[ >= ]]> #{begin}
+	</select>
+	
+	<select id="countComplexSearch" resultType="int">
+	    SELECT COUNT(*) FROM account A
+	    <include refid="accountSearch" />
 	</select>
 	
 	<!-- 아이디 찾기(휴대폰, 이메일) -->
@@ -186,5 +218,29 @@
 	<update id="updateMaxSchedule">
 		update account set account_max_schedule = #{accountMaxSchedule} where account_id = #{accountId}
 	</update>
+	
+	<select id="selectAccountDashboardList" resultType="AccountForAdminVO">
+	    SELECT * FROM (
+	        SELECT ROWNUM AS rn, TMP.* FROM (
+	            SELECT 
+	                A.account_id,
+	                A.account_nickname,
+	                A.account_email,
+	                A.account_contact,
+	                A.account_level,
+	                A.account_join,
+	                A.account_login,
+	                A.account_max_schedule,
+	                (SELECT COUNT(*) 
+	                 FROM schedule S 
+	                 WHERE S.schedule_owner = A.account_id) AS schedule_count
+	            FROM 
+	                account A
+	            ORDER BY 
+	                A.account_join DESC
+	        ) TMP
+	        WHERE ROWNUM <![CDATA[ <= ]]> #{end}
+	    ) WHERE rn <![CDATA[ >= ]]> #{begin}
+	</select>
 
 </mapper>

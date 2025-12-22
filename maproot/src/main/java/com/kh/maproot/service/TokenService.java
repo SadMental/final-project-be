@@ -92,7 +92,7 @@ public class TokenService {
 	
 	//토큰 정보 해석
 	public GuestTokenVO guestParse(String accessToken) {
-		Claims claims = getClaims(accessToken);
+		Claims claims = getGuestClaims(accessToken);
 		return GuestTokenVO.builder()
 				.accessToken(accessToken)
 				.guestNo((Number)claims.get("guestNo"))

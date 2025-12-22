@@ -15,8 +15,8 @@ import lombok.NoArgsConstructor;
 @Data	@AllArgsConstructor @NoArgsConstructor @Builder
 public class ReviewRequestVO {
 	
-	 	private int reviewNo;                    // 리뷰 PK
-	    private int scheduleNo;            // 어떤 일정(review_schedule_no)
+	 	private Integer reviewNo;                    // 리뷰 PK
+	    private Long scheduleNo;            // 어떤 일정(review_schedule_no)
 	    private List<Integer> scheduleUnitList;		//리뷰-일정 연결 테이블
 	    private String reviewWriterType;         // USER / GUEST
 	    private String accountId;   // 회원일 경우 (nullable)

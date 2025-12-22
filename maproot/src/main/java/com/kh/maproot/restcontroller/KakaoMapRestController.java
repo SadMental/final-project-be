@@ -117,6 +117,7 @@ public class KakaoMapRestController {
 	
 	@PostMapping("/getAddress")
 	public KakaoMapGeocoderResponseVO getAddress(@RequestBody KakaoMapLocationVO location) {
+		log.debug("location = {}", location);
 		KakaoMapGeocoderRequestVO requestVO = KakaoMapGeocoderRequestVO.builder()
 					.x(String.valueOf(location.getX()))
 					.y(String.valueOf(location.getY()))

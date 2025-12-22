@@ -223,25 +223,42 @@ public class MapService {
 	        }
 	        
 	        // 2. 경로 데이터 처리 (ScheduleRouteDto 변환)
-	        List<KakaoMapRoutesDto> routes = day.getRoutes();
-	        for(KakaoMapRoutesDto route : routes) {
-	            String ordinateString = GeometryUtils.toOrdinateString(route.getLinepath());
-	            String[] tempKey = route.getRouteKey().split("##");
-	            
-	            ScheduleRouteDto routeDto = ScheduleRouteDto.builder()
-	                .scheduleNo(scheduleNo)
-	                .scheduleUnitDay(scheduleDay)
-	                .scheduleRouteKey(route.getRouteKey())
-	                .scheduleRouteTime(route.getDuration())
-	                .scheduleRouteDistance(route.getDistance())
-	                .ordinateString(ordinateString)
-	                .scheduleRoutePriority(route.getPriority())
-	                .scheduleRouteType(route.getType())
-	                .tempStartKey(tempKey[0])
-	                .tempEndKey(tempKey[1])
-	                .build();
-	            
-	            routeEntities.add(routeDto);
+	        Map<String, Map<String, List<KakaoMapRoutesDto>>> routesMap = day.getRoutes();
+	        if (routesMap != null) {
+	            // 1단계: 이동수단 순회 (CAR, WALK)
+	            for (String type : routesMap.keySet()) {
+	                Map<String, List<KakaoMapRoutesDto>> priorityMap = routesMap.get(type);
+	                
+	                if (priorityMap != null) {
+	                    // 2단계: 우선순위 순회 (RECOMMEND, TIME, DISTANCE)
+	                    for (String priority : priorityMap.keySet()) {
+	                        List<KakaoMapRoutesDto> routeList = priorityMap.get(priority);
+	                        
+	                        if (routeList != null) {
+	                            // 3단계: 실제 경로 리스트 순회
+	                            for (KakaoMapRoutesDto route : routeList) {
+	                                String ordinateString = GeometryUtils.toOrdinateString(route.getLinepath());
+	                                String[] tempKey = route.getRouteKey().split("##");
+	                                
+	                                ScheduleRouteDto routeDto = ScheduleRouteDto.builder()
+	                                    .scheduleNo(scheduleNo)
+	                                    .scheduleUnitDay(scheduleDay)
+	                                    .scheduleRouteKey(route.getRouteKey())
+	                                    .scheduleRouteTime(route.getDuration())
+	                                    .scheduleRouteDistance(route.getDistance())
+	                                    .ordinateString(ordinateString)
+	                                    .scheduleRoutePriority(priority) // Map의 Key에서 가져옴
+	                                    .scheduleRouteType(type)         // Map의 Key에서 가져옴
+	                                    .tempStartKey(tempKey[0])
+	                                    .tempEndKey(tempKey[1])
+	                                    .build();
+	                                
+	                                routeEntities.add(routeDto);
+	                            }
+	                        }
+	                    }
+	                }
+	            }
 	        }
 	    }
 	    

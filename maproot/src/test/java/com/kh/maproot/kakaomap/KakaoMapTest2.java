@@ -10,13 +10,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.kh.maproot.MaprootApplication;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@SpringBootTest
+@SpringBootTest(classes = MaprootApplication.class)
 public class KakaoMapTest2 {
 	
-	@Autowired @Qualifier("kakaomapGeocoder")
+	@Autowired @Qualifier("kakaomapLocal")
 	private WebClient webClient;
 	
 	@Test
@@ -25,7 +27,7 @@ public class KakaoMapTest2 {
 		
 		Map response = webClient.get() // 포스트 요철
 				.uri(uriBuilder -> uriBuilder
-				        .path("/coord2address") // 🚨 baseUrl 이후의 경로만 지정
+				        .path("/geo/coord2address") // 🚨 baseUrl 이후의 경로만 지정
 				        .queryParam("x", "127.1112") // 🚨 쿼리 파라미터로 데이터 전달
 				        .queryParam("y", "37.3949")
 				        .build()

@@ -12,9 +12,7 @@ import lombok.NoArgsConstructor;
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class KakaoMapRoutesDto {
 	private String routeKey;
-	private String priority;
 	private Integer distance;
 	private Integer duration;
 	private List<KakaoMapCoordinateVO> linepath;
-	private String type;
 }

@@ -38,7 +38,7 @@
 	</select>
 	
 	<select id="selectList" resultType="ScheduleUnitDto">
-		select * from schedule_unit where schedule_no = #{scheduleNo}
+		select * from schedule_unit where schedule_no = #{scheduleNo} order by schedule_unit_position asc
 	</select>
 	
 	<delete id="deleteByScheduleNo">

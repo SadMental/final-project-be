@@ -1,9 +1,9 @@
 package com.kh.maproot.service;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Array;
 import java.sql.Struct;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,12 +14,15 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.kh.maproot.dao.AccountDao;
 import com.kh.maproot.dao.ScheduleDao;
 import com.kh.maproot.dao.ScheduleMemberDao;
 import com.kh.maproot.dao.ScheduleRouteDao;
 import com.kh.maproot.dao.ScheduleTagDao;
 import com.kh.maproot.dao.ScheduleUnitDao;
+import com.kh.maproot.dto.AccountDto;
 import com.kh.maproot.dto.ScheduleDto;
 import com.kh.maproot.dto.ScheduleMemberDto;
 import com.kh.maproot.dto.ScheduleRouteDto;
@@ -28,9 +31,11 @@ import com.kh.maproot.dto.ScheduleUnitDto;
 import com.kh.maproot.dto.kakaomap.KakaoMapDataDto;
 import com.kh.maproot.dto.kakaomap.KakaoMapDaysDto;
 import com.kh.maproot.dto.kakaomap.KakaoMapRoutesDto;
+import com.kh.maproot.error.UnauthorizationException;
 import com.kh.maproot.schedule.vo.ScheduleCreateRequestVO;
 import com.kh.maproot.schedule.vo.ScheduleInsertDataWrapperVO;
 import com.kh.maproot.schedule.vo.ScheduleListResponseVO;
+import com.kh.maproot.schedule.vo.ScheduleStateResponseVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapCoordinateVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapLocationVO;
 
@@ -50,14 +55,18 @@ public class ScheduleService {
 	private ScheduleUnitDao scheduleUnitDao;
 	@Autowired
 	private ScheduleRouteDao scheduleRouteDao;
+	@Autowired
+	private AttachmentService attachmentService;
+	@Autowired
+	private AccountDao accountDao;
 	
 	@Transactional
-	public ScheduleDto insert(ScheduleCreateRequestVO scheduleVO) {
+	public ScheduleDto insert(ScheduleCreateRequestVO scheduleVO, MultipartFile attach) throws IllegalStateException, IOException {
 		//일정 등록
 				ScheduleDto scheduleDto = ScheduleDto.builder()
 								.scheduleName(scheduleVO.getScheduleName())
 								.scheduleOwner(scheduleVO.getScheduleOwner())
-								.scheduleWtime(Timestamp.valueOf(LocalDateTime.now()))
+								.scheduleWtime(LocalDateTime.now())
 								.scheduleStartDate(scheduleVO.getScheduleStartDate())
 								.scheduleEndDate(scheduleVO.getScheduleEndDate())
 								.build();
@@ -76,15 +85,29 @@ public class ScheduleService {
 				
 				//맴버 테이블에도 추가
 				
+				AccountDto accountDto = accountDao.selectOne(scheduleVO.getScheduleOwner());
+
+				accountDto.setAttachmentNo(
+						accountDto.getAttachmentNo() != null && accountDto.getAttachmentNo() > 0
+					        ? accountDto.getAttachmentNo()
+					        : null
+					);
+				
 				ScheduleMemberDto scheduleMemberDto = ScheduleMemberDto.builder()
 						.scheduleNo(sequence)
-						.accountId("testuser1")
-						.scheduleMemberNickname("테스트유저1")
-						.scheduleMemberRole("member")
+						.accountId(accountDto.getAccountId())
+						.scheduleMemberNickname(accountDto.getAccountNickname())
+						.scheduleMemberRole("owner")
 						.scheduleMemberNotify("Y")
 					.build();
 				
 				scheduleMemberDao.insert(scheduleMemberDto);
+				
+				// 프로필 이미지 추가(insert이후) 
+				if(attach != null && attach.isEmpty() == false){
+					Long attachmentNo = attachmentService.save(attach);
+					scheduleDao.connect(sequence, attachmentNo);
+				}
 				
 				return scheduleDto;
 	}
@@ -112,7 +135,7 @@ public class ScheduleService {
 			String dayKey = String.valueOf(unit.getScheduleUnitDay());
 			daysMap.computeIfAbsent(dayKey, k -> KakaoMapDaysDto.builder()
 						.markerIds(new ArrayList<>())
-						.routes(new ArrayList<>())
+						.routes(new HashMap<>())
 					.build());
 			daysMap.get(dayKey).getMarkerIds().add(unit.getScheduleKey());
 		}
@@ -122,17 +145,30 @@ public class ScheduleService {
 	        String dayKey = String.valueOf(route.getScheduleUnitDay());
 	        
 	        if (daysMap.containsKey(dayKey)) {
-	            // 리액트에서 사용하던 경로 데이터 구조로 변환
-	        	KakaoMapRoutesDto routeDto = KakaoMapRoutesDto.builder()
+	            KakaoMapDaysDto dayDto = daysMap.get(dayKey);
+	            
+	            // 중첩 맵 구조 확보 (Type -> Priority -> List)
+	            String type = route.getScheduleRouteType();         // CAR, WALK
+	            String priority = route.getScheduleRoutePriority(); // RECOMMEND, TIME, DISTANCE
+	            
+	            // Type 맵 확보
+	            Map<String, List<KakaoMapRoutesDto>> typeMap = 
+	                dayDto.getRoutes().computeIfAbsent(type, k -> new HashMap<>());
+	            
+	            // Priority 리스트 확보
+	            List<KakaoMapRoutesDto> routeListForPriority = 
+	                typeMap.computeIfAbsent(priority, k -> new ArrayList<>());
+
+	            // DTO 생성 (내부 필드에서 type, priority가 제거되었다면 제외)
+	            KakaoMapRoutesDto routeDto = KakaoMapRoutesDto.builder()
 	                .routeKey(route.getScheduleRouteKey())
-	                .priority(route.getScheduleRoutePriority()) // RECOMMEND, TIME, DISTANCE
-	                .type(route.getScheduleRouteType())         // CAR, WALK
 	                .distance(route.getScheduleRouteDistance())
 	                .duration(route.getScheduleRouteTime())
-	                .linepath(convertGeomToList(route.getScheduleRouteGeom())) // 이미 파싱된 JSON 또는 문자열
+	                .linepath(convertGeomToList(route.getScheduleRouteGeom()))
 	                .build();
 	            
-	        	daysMap.get(dayKey).getRoutes().add(routeDto);
+	            // 최종 리스트에 추가
+	            routeListForPriority.add(routeDto);
 	        }
 	    }
 		KakaoMapDataDto data = KakaoMapDataDto.builder()
@@ -177,44 +213,71 @@ public class ScheduleService {
 	    return path;
 	}
 	
-	@Transactional
-	public List<ScheduleListResponseVO> loadScheduleList(String accountId) {
-		List<ScheduleMemberDto> list = scheduleMemberDao.selectByAccountId(accountId);
-		
-		//일정 내용 찾기 (찾은 dto의 pk로 검색)
-
-		List<ScheduleListResponseVO> voList = new ArrayList<>(); 
-		
-		for(ScheduleMemberDto scheduleMemberDto : list) {
-			
-			Long scheduleNo = scheduleMemberDto.getScheduleNo();
-			
-			ScheduleDto findScheduleDto = scheduleDao.selectByScheduleNo(scheduleNo);
-			ScheduleUnitDto unitFirst = scheduleUnitDao.selectFirstUnit(scheduleNo);
-			Integer unitCount = scheduleUnitDao.selectUnitCount(scheduleNo);
-			Integer memberCount = scheduleMemberDao.selectMemberCount(scheduleNo);
-			
-			ScheduleListResponseVO scheduleListResponseVO = ScheduleListResponseVO.builder()
-					.scheduleNo(scheduleMemberDto.getScheduleNo())
-					.scheduleName(findScheduleDto.getScheduleName())
-					.scheduleState(findScheduleDto.getScheduleState())
-					.schedulePublic(findScheduleDto.getSchedulePublic())
-					.scheduleOwner(findScheduleDto.getScheduleOwner())
-					.scheduleStartDate(findScheduleDto.getScheduleStartDate())
-					.scheduleEndDate(findScheduleDto.getScheduleEndDate())
-					.unitFirst(unitFirst)
-					.unitCount(unitCount)
-					.memberCount(memberCount)
-					.scheduleImage("공란")
-					.build();
-			
-			voList.add(scheduleListResponseVO);
-			
-		}
-		
-		//검색된 일정들 VO로 전송
-		
-		return voList;
+	// 1. 전체 공개 일정 (파라미터 없이 호출 -> null 전달)
+	public List<ScheduleListResponseVO> loadScheduleList() {
+	    return scheduleDao.selectScheduleList(null);
 	}
+
+	// 2. 특정 회원 일정 (ID 전달)
+	public List<ScheduleListResponseVO> loadScheduleList(String accountId) {
+	    return scheduleDao.selectScheduleList(accountId);
+	}
+	
+	//약속전/진행중/종료
+	public String scheduleState(LocalDateTime start, LocalDateTime end) {
+
+	    if (start == null) {
+	        throw new IllegalArgumentException("약속 시작시간은 필수입니다.");
+	    }
+
+	    LocalDateTime now = LocalDateTime.now();
+
+	    // 종료시간 없으면 시작 + 1일
+	    LocalDateTime resolvedEnd = (end != null) ? end : start.plusDays(1);
+
+	    // 약속 전
+	    if (now.isBefore(start)) {
+	        return "약속전";
+	    }
+
+	    // 종료 (종료를 먼저 판정)
+	    if (!now.isBefore(resolvedEnd)) {
+	        return "종료";
+	    }
+
+	    // 진행 중
+	    return "진행중";
+	}
+	
+	@Transactional
+	public void updateSchedulePublic(Long scheduleNo, boolean schedulePublic) {
+	    String yn = schedulePublic ? "Y" : "N";
+	    int updated = scheduleDao.updateSchedulePublic(scheduleNo, yn);
+	}
+
+	public ScheduleStateResponseVO refreshStateByNow(long scheduleNo) {
+
+        ScheduleDto dto = scheduleDao.selectByScheduleNo(scheduleNo);
+        System.out.println("dto=" + dto);
+        if (dto == null) throw new IllegalArgumentException("일정이 존재하지 않습니다: " + scheduleNo);
+        
+        String next = scheduleState(dto.getScheduleStartDate(), dto.getScheduleEndDate());
+        String prev = dto.getScheduleState();
+
+        boolean changed = (prev == null) || !prev.equals(next);
+        if (changed) {
+            scheduleDao.updateScheduleState(scheduleNo, next);
+        }
+        prev = (prev == null) ? null : prev.trim();
+        
+        
+        
+        return ScheduleStateResponseVO.builder()
+                .scheduleNo(scheduleNo)
+                .scheduleState(next)
+                .changed(changed)
+                .build();
+    }
+	 
 
 }

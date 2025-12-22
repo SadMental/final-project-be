@@ -24,4 +24,5 @@ public class ReviewResponseVO {
 	    private Timestamp reviewWtime;       // 작성 시간
 	    private Timestamp reviewEtime;      // 수정 시간
 	    private List<Integer> scheduleUnitNoList;  // 일정 세부 구간
+	    private Long attachmentNo;
 }

@@ -1,6 +1,7 @@
 package com.kh.maproot.dao;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
@@ -8,6 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kh.maproot.dto.AccountDto;
+import com.kh.maproot.error.NeedPermissionException;
+import com.kh.maproot.vo.AccountComplexSearchVO;
+import com.kh.maproot.vo.AccountForAdminVO;
+import com.kh.maproot.vo.AccountListVO;
+import com.kh.maproot.vo.AdminComplexPageParamVO;
+import com.kh.maproot.vo.AdminPageParamVO;
+import com.kh.maproot.vo.PageVO;
+import com.kh.maproot.vo.PaymentParamVO;
+import com.kh.maproot.vo.TokenVO;
 
 @Repository
 public class AccountDao {
@@ -92,5 +102,43 @@ public class AccountDao {
 	public long updateMaxSchedule(AccountDto accountDto) {
 		return sqlSession.update("account.updateMaxSchedule", accountDto);
 	}
+	
+	public List<AccountForAdminVO> selectListForAdmin(TokenVO tokenVO, PageVO pageVO) {
+		AccountDto accountDto = selectOne(tokenVO.getLoginId());
+		if(!accountDto.getAccountLevel().equals("관리자")) throw new NeedPermissionException();
+		AdminPageParamVO params = AdminPageParamVO.builder()
+				.begin(pageVO.getBegin())
+				.end(pageVO.getEnd())
+			.build();
+		List<AccountForAdminVO> list = sqlSession.selectList("account.selectAccountDashboardList", params);
+		return list.isEmpty()? List.of():list;
+	}
+	
+	public List<AccountForAdminVO> complexSearch(AccountComplexSearchVO searchVO, PageVO pageVO, TokenVO tokenVO) {
+		AccountDto accountDto = selectOne(tokenVO.getLoginId());
+		if(!accountDto.getAccountLevel().equals("관리자")) throw new NeedPermissionException();
+		AdminComplexPageParamVO params = AdminComplexPageParamVO.builder()
+				.begin(pageVO.getBegin())
+				.end(pageVO.getEnd())
+				.accountComplexSearchVO(searchVO)
+			.build();
+		List<AccountForAdminVO> list = sqlSession.selectList("account.complexSearch", params);
+		return list.isEmpty()? List.of():list;
+	}
+	public int countForAdmin(TokenVO tokenVO) {
+		AccountDto accountDto = selectOne(tokenVO.getLoginId());
+		if(!accountDto.getAccountLevel().equals("관리자")) throw new NeedPermissionException();
+		return sqlSession.selectOne("account.countForAdmin");
+	}
+	public int count() {
+		return sqlSession.selectOne("account.count");
+	}
+	public int countForComplex(AccountComplexSearchVO searchVO) {
+		AdminComplexPageParamVO params = AdminComplexPageParamVO.builder()
+	            .accountComplexSearchVO(searchVO)
+	            .build();
+		return sqlSession.selectOne("account.countComplexSearch", params);
+	}
+	
 
 }

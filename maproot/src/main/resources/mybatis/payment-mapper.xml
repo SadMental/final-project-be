@@ -62,4 +62,26 @@
 		) where rn between #{begin} and #{end}
 	</select>
 <!-- 조회(페이징 + 카운트) -->
+	<sql id="paymentSearchCondition">
+	    <where>
+	        <if test="search.column != null and search.keyword != null and search.keyword != ''">
+	            AND ${search.column} LIKE '%' || #{search.keyword} || '%'
+	        </if>
+	    </where>
+	</sql>
+	
+	<select id="listByPagingAll" resultType="PaymentDto">
+	    SELECT * FROM (
+	        SELECT rownum rn, TMP.* FROM (
+	            SELECT * FROM payment 
+	            <include refid="paymentSearchCondition" />
+	            ORDER BY payment_no DESC
+	        ) TMP
+	    ) WHERE rn BETWEEN #{page.begin} AND #{page.end}
+	</select>
+	
+	<select id="countByPagingAll" resultType="int">
+	    SELECT COUNT(*) FROM payment
+	    <include refid="paymentSearchCondition" />
+	</select>
 </mapper>

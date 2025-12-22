@@ -1,5 +1,7 @@
 package com.kh.maproot.vo;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
@@ -11,7 +13,7 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown =  true)
 public class AccountComplexSearchVO {
 	// 관리자 검사
-	private String loginLevel;
+	private List<String> accountLevelList;
 	
 	private String accountId;
 	private String accountNickname;
@@ -19,6 +21,8 @@ public class AccountComplexSearchVO {
 	private String accountContact;
 	private String accountBirth;
 	private String beginAccountJoin, endAccountJoin;
-	private Integer minScheduleQty, maxScheduleQty;
+	private Integer minSchedule, maxSchedule;
+	private Integer minScheduleCount, maxScheduleCount;
+	private Integer page;
 	
 }

@@ -49,8 +49,8 @@ public class AccountService {
 		accountDao.insert(accountDto);
 		
 		// 회원 프로필 추가(회원프로필은 등록 후 해야함)
-		if(attach.isEmpty() == false) {
-			long attachmentNo = attachmentService.save(attach);
+		if(attach != null && attach.isEmpty() == false) {
+			Long attachmentNo = attachmentService.save(attach);
 			accountDao.connect(accountDto.getAccountId(), attachmentNo);
 		}
 		
