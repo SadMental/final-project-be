@@ -3,6 +3,7 @@ package com.kh.maproot.restcontroller;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,6 +102,7 @@ public class ScheduleReviewRestcontroller {
 	                    .reviewContent(row.getReviewContent())
 	                    .reviewWtime(row.getReviewWtime())
 	                    .reviewEtime(row.getReviewEtime())
+	                    .reviewType(row.getReviewType())
 	                    .attachmentNo(row.getAttachmentNo())
 	                    .scheduleUnitNoList(new ArrayList<>()) // 처음엔 빈 리스트
 	                    .build()
@@ -128,13 +130,26 @@ public class ScheduleReviewRestcontroller {
 			@RequestHeader(value = "Authorization", required = false) String authorization
 			) {
 		 
+		System.out.println("reviewRequestVO" + reviewRequestVO);
 
 		//댓글 등록 (추후 사진 이미지 추가 필요)
 		ReviewDto reviewDto = ReviewDto.builder()
 				.scheduleNo(reviewRequestVO.getScheduleNo())
 				.reviewContent(reviewRequestVO.getReviewContent())
 				.reviewWtime(Timestamp.valueOf(LocalDateTime.now()))
+				.reviewType(reviewRequestVO.getReviewType())
 				.build();
+		
+		
+		 ScheduleDto scheduleDto = scheduleDao.selectByScheduleNo(reviewRequestVO.getScheduleNo());
+
+		 LocalDateTime now = LocalDateTime.now();
+
+		 boolean finished = false;
+		 if (scheduleDto.getScheduleEndDate() != null) {
+		     finished = scheduleDto.getScheduleEndDate().isBefore(now);
+		 }
+
 		
 		//유저인지, 게스트인지 확인 필요(유저 정보는 백엔드에서 해결)
 		try { //게스트 토큰 먼저 시도
@@ -170,7 +185,7 @@ public class ScheduleReviewRestcontroller {
 	//댓글 수정
 	@PatchMapping("/{reviewNo}")
 	public boolean update(
-			@PathVariable int reviewNo ,@RequestBody ReviewDto reviewDto) {
+			@PathVariable Integer reviewNo ,@RequestBody ReviewDto reviewDto) {
 		reviewDto.setReviewNo(reviewNo);
 		return reviewDao.update(reviewDto);
 	}
@@ -184,7 +199,7 @@ public class ScheduleReviewRestcontroller {
 	}
 	
 	@GetMapping("/unit/list/{scheduleNo}")
-	public List<ScheduleUnitDto> scheduleUnitList(@PathVariable long scheduleNo) {
+	public List<ScheduleUnitDto> scheduleUnitList(@PathVariable Long scheduleNo) {
 		ScheduleDto findDto = scheduleDao.selectByScheduleNo(scheduleNo);
 	    return scheduleUnitDao.selectList(findDto);
 	}

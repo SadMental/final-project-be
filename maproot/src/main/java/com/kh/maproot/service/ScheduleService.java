@@ -31,10 +31,13 @@ import com.kh.maproot.dto.ScheduleUnitDto;
 import com.kh.maproot.dto.kakaomap.KakaoMapDataDto;
 import com.kh.maproot.dto.kakaomap.KakaoMapDaysDto;
 import com.kh.maproot.dto.kakaomap.KakaoMapRoutesDto;
+import com.kh.maproot.error.NeedPermissionException;
 import com.kh.maproot.error.UnauthorizationException;
 import com.kh.maproot.schedule.vo.ScheduleCreateRequestVO;
 import com.kh.maproot.schedule.vo.ScheduleInsertDataWrapperVO;
 import com.kh.maproot.schedule.vo.ScheduleListResponseVO;
+import com.kh.maproot.schedule.vo.ScheduleStateResponseVO;
+import com.kh.maproot.vo.TokenVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapCoordinateVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapLocationVO;
 
@@ -253,7 +256,39 @@ public class ScheduleService {
 	public void updateSchedulePublic(Long scheduleNo, boolean schedulePublic) {
 	    String yn = schedulePublic ? "Y" : "N";
 	    int updated = scheduleDao.updateSchedulePublic(scheduleNo, yn);
-	    System.out.println("updateSchedulePublic scheduleNo=" + scheduleNo + " yn=" + yn + " updated=" + updated);
+	}
+
+	public ScheduleStateResponseVO refreshStateByNow(long scheduleNo) {
+
+        ScheduleDto dto = scheduleDao.selectByScheduleNo(scheduleNo);
+        System.out.println("dto=" + dto);
+        if (dto == null) throw new IllegalArgumentException("일정이 존재하지 않습니다: " + scheduleNo);
+        
+        String next = scheduleState(dto.getScheduleStartDate(), dto.getScheduleEndDate());
+        String prev = dto.getScheduleState();
+
+        boolean changed = (prev == null) || !prev.equals(next);
+        if (changed) {
+            scheduleDao.updateScheduleState(scheduleNo, next);
+        }
+        prev = (prev == null) ? null : prev.trim();
+        
+        
+        
+        return ScheduleStateResponseVO.builder()
+                .scheduleNo(scheduleNo)
+                .scheduleState(next)
+                .changed(changed)
+                .build();
+    }
+	
+	@Transactional
+	public boolean delete(Long scheduleNo, TokenVO tokenVO) {
+		ScheduleDto scheduleDto = scheduleDao.selectByScheduleNo(scheduleNo);
+		if(!scheduleDto.getScheduleOwner().equals(tokenVO.getLoginId())) throw new NeedPermissionException();
+		scheduleRouteDao.deleteByScheduleNo(scheduleNo);
+		scheduleUnitDao.deleteByScheduleNo(scheduleNo);
+		return scheduleDao.delete(scheduleNo);
 	}
 	 
 

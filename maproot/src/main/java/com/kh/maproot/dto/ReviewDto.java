@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 public class ReviewDto {
 
 	    private Integer reviewNo;                    // 리뷰 PK
-	    private Integer scheduleNo;            // 어떤 일정(review_schedule_no)
+	    private Long scheduleNo;            // 어떤 일정(review_schedule_no)
 	    private String reviewWriterType;         // USER / GUEST
 	    private String accountId;   // 회원일 경우 (nullable)
 	    private String reviewWriterNickname;     // 화면 표시 닉네임
@@ -24,4 +24,5 @@ public class ReviewDto {
 	    private Timestamp reviewWtime;       // 작성 시간
 	    private Timestamp reviewEtime;      // 수정 시간
 	    private List<Integer> scheduleUnitNoList;
+	    private String reviewType;
 }

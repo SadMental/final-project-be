@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class ReviewUnitLinkDto {
 
 	private int linkNo;          // PK
-	private int reviewNo;        // 리뷰
+	private Integer reviewNo;        // 리뷰
 	private int scheduleUnitNo;  // 일정 세부 구간
 
 }

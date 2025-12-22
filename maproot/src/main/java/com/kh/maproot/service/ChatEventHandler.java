@@ -9,7 +9,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.socket.messaging.SessionConnectedEvent;
+import org.springframework.web.socket.messaging.SessionConnectEvent;
 
 import com.kh.maproot.dao.ChatDao;
 import com.kh.maproot.vo.TokenVO;
@@ -38,7 +38,7 @@ public class ChatEventHandler {
     }
 	
 	@EventListener
-	public void enter(SessionConnectedEvent event) {
+	public void enter(SessionConnectEvent event) {
 		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 		
 		String chatNoStr = accessor.getFirstNativeHeader("chatNo");
@@ -56,18 +56,32 @@ public class ChatEventHandler {
                 accessor.getSessionId(), chatNoStr, tokenVO.getLoginId());
 	}
 	
+//	@EventListener
+//	public void leave(SessionConnectedEvent event) {
+//		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
+//		
+//		String chatNoStr = sessions.remove(accessor.getSessionId());
+//		String loginId = nickName.remove(accessor.getSessionId());
+//		
+//		if(chatNoStr == null) return;
+//		
+//		chatService.sendChatEnd(Integer.parseInt(chatNoStr));
+//		
+//		log.debug("세션 해제 처리: ID={}, ChatNo={}, User={}", 
+//                accessor.getSessionId(), chatNoStr, loginId);
+//	}
 	@EventListener
-	public void leave(SessionConnectedEvent event) {
-		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-		
-		String chatNoStr = sessions.remove(accessor.getSessionId());
-		String loginId = nickName.remove(accessor.getSessionId());
-		
-		if(chatNoStr == null) return;
-		
-		chatService.sendChatEnd(Integer.parseInt(chatNoStr));
-		
-		log.debug("세션 해제 처리: ID={}, ChatNo={}, User={}", 
-                accessor.getSessionId(), chatNoStr, loginId);
+	public void leave(SessionConnectEvent event) {
+	    StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
+
+	    String chatNoStr = sessions.remove(accessor.getSessionId());
+	    String loginId = nickName.remove(accessor.getSessionId());
+
+	    if(chatNoStr == null) return;
+
+	    chatService.sendChatEnd(Long.parseLong(chatNoStr));
+
+	    log.debug("세션 해제 처리: ID={}, ChatNo={}, User={}",
+	        accessor.getSessionId(), chatNoStr, loginId);
 	}
 }

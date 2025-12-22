@@ -28,7 +28,7 @@ public class ReviewUnitLinkDao {
 		
 	};
 	
-	public void insert(int reviewNo ,List<Integer> scheduleUnitList) {
+	public void insert(Integer reviewNo ,List<Integer> scheduleUnitList) {
 		
 		for(Integer scheduleUnitNo : scheduleUnitList) {
 			ReviewUnitLinkDto reviewUnitLinkDto=

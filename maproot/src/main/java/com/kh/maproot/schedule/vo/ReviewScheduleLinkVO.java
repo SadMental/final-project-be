@@ -25,4 +25,5 @@ public class ReviewScheduleLinkVO {
 	    private Timestamp reviewEtime;      // 수정 시간
 	    private Integer scheduleUnitNo;  // 일정 세부 구간
 	    private Long attachmentNo; //회원 이미지
+	    private String reviewType;
 }

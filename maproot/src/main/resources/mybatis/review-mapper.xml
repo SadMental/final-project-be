@@ -14,12 +14,12 @@
 		review_no, schedule_no, 
 		review_writer_type, account_id,
 		review_writer_nickname, review_content,
-		review_wtime
+		review_wtime, review_type
 	) values (
 	#{reviewNo}, #{scheduleNo},
 		#{reviewWriterType} , #{accountId},
 		#{reviewWriterNickname}, #{reviewContent},
-		#{reviewWtime}
+		#{reviewWtime}, #{reviewType}
 	)
 </insert>
 

@@ -98,7 +98,20 @@ public class ScheduleDao {
 	    param.put("schedulePublic", schedulePublic); // "Y" or "N"
 	    return sqlSession.update("schedule.updateSchedulePublic", param);
 	}
+	
+    public int updateScheduleState(long scheduleNo, String scheduleState) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("scheduleNo", scheduleNo);
+        param.put("scheduleState", scheduleState);
+        return sqlSession.update("schedule.updateScheduleState", param);
+    }
+
+	public boolean delete(Long scheduleNo) {
+		return sqlSession.delete("schedule.delete", scheduleNo) > 0;
+		
 	}
+	
+}
 	
 	
 	

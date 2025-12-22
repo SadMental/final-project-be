@@ -248,5 +248,10 @@ public class AccountRestController {
 	    
 	    // 서비스 메서드가 토글 수행 후 '전체 좋아요 개수'를 반환하도록 호출
 	    return accountService.toggleSchedulelike(loginId, scheduleNo);
+	@PostMapping("/dropAdmin")
+	public void dropAdmin(
+			@RequestAttribute TokenVO tokenVO,
+			@RequestBody AccountDto accountDto) {
+		accountService.dropAdmin(accountDto.getAccountId(), tokenVO);
 	}
 }

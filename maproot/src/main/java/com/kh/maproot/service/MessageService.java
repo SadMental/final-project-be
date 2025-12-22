@@ -129,6 +129,12 @@ public class MessageService {
 			}
 			// 2. 욕설 필터링
 			String regex = "(.*?)(씨발|시발|병신|존나|개새끼|미친)(.*?)";
+			
+			if (requestVO.getContent() == null) {
+			    log.warn("메시지 내용(content)이 null입니다. 처리를 중단합니다.");
+			    return; 
+			}
+			
 			Matcher matcher = Pattern.compile(regex).matcher(requestVO.getContent());
 			
 			if(matcher.find()) {
@@ -146,6 +152,11 @@ public class MessageService {
 			
 			//3. 채팅 전송
 			chatService.sendChat(chatNo, requestVO, tokenVO);
+			
+//			simpMessagingTemplate.convertAndSend(
+//			    "/public/message/" + chatNo, 
+//			    requestVO
+//			);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
