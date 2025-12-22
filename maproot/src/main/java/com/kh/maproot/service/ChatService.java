@@ -192,7 +192,7 @@ public class ChatService {
 	        throw new IllegalStateException("상담 종료 권한이 없습니다");
 	    }
 
-	    // ✅ chat_id / chat_level 반드시 null 처리
+	    // chat_id / chat_level 반드시 null 처리
 	    ChatDto updateDto = new ChatDto();
 	    updateDto.setChatNo(chatNo);
 	    updateDto.setChatStatus("CLOSED");

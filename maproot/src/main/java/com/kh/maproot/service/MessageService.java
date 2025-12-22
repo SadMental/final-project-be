@@ -153,10 +153,10 @@ public class MessageService {
 			//3. 채팅 전송
 			chatService.sendChat(chatNo, requestVO, tokenVO);
 			
-			simpMessagingTemplate.convertAndSend(
-			    "/public/message/" + chatNo, 
-			    requestVO
-			);
+//			simpMessagingTemplate.convertAndSend(
+//			    "/public/message/" + chatNo, 
+//			    requestVO
+//			);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
