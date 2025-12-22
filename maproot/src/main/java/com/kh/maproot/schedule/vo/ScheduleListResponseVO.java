@@ -14,6 +14,9 @@ import lombok.NoArgsConstructor;
 
 public class ScheduleListResponseVO {
 	
+	
+	
+	
 	  private Long scheduleNo;
 	  private String scheduleName;
 	  private String scheduleState;   // open/close/progress
@@ -28,5 +31,9 @@ public class ScheduleListResponseVO {
 	  private Integer unitCount;     // 세부일정 개수
 	  private Integer memberCount;   // 참여자 수
 	  private String scheduleImage;   // 대표 이미지
+	  
+	  // 태그 추가
+	  private String tags;
+	  
     
 }

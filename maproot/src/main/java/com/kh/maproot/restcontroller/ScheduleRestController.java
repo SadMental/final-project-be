@@ -90,14 +90,6 @@ public class ScheduleRestController {
 		return scheduleService.insert(scheduleVO, attach);
 	}
 	
-	@GetMapping("/list/{accountId}")
-	public List<ScheduleListResponseVO> list(
-			@PathVariable String accountId
-			) {
-		System.out.println("데이터확인"+accountId);
-		//회원에 따른 일정 찾기 (스케쥴 맴버 테이블에서 검색)
-		return scheduleService.loadScheduleList(accountId);
-	}
 	
 	@GetMapping("/memberList/{scheduleNo}")
 	public List<ScheduleMemberDto> selectMemberList(@PathVariable Long scheduleNo) {
@@ -133,10 +125,16 @@ public class ScheduleRestController {
 	    return scheduleService.loadScheduleData(scheduleDto);
 	}
 	
-	// 전체 일정 목록
+	// 전체 일정 목록(회원일때, 아닐때)
 	@GetMapping("/")
 	public List<ScheduleListResponseVO> listAll(){
 		return scheduleService.loadScheduleList();
+	}
+	@GetMapping("/list/{accountId}")
+	public List<ScheduleListResponseVO> list(
+			@PathVariable String accountId
+			) {
+		return scheduleService.loadScheduleList(accountId);
 	}
 	
 	//public 변경

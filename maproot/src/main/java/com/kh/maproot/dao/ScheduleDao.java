@@ -15,6 +15,7 @@ import com.kh.maproot.error.TargetNotfoundException;
 import com.kh.maproot.vo.PageVO;
 import com.kh.maproot.vo.ScheduleSearchVO;
 import com.kh.maproot.vo.TokenVO;
+import com.kh.maproot.schedule.vo.ScheduleListResponseVO;
 
 @Repository
 public class ScheduleDao {
@@ -56,9 +57,8 @@ public class ScheduleDao {
 		return sqlSession.selectOne("schedule.findAttach", scheduleNo);
 	}
 	
-	// 공개된 일정 리스트
-	public List<ScheduleDto> selectAllList(){
-		return sqlSession.selectList("schedule.selectAllList");
+	public List<ScheduleListResponseVO> selectScheduleList(String accountId) {
+	    return sqlSession.selectList("schedule.selectScheduleList", accountId);
 	}
 	// 관리자용 일정 리스트
 	public List<ScheduleDto> selectAllListForAdmin(TokenVO tokenVO){
