@@ -187,7 +187,10 @@
     set schedule_state = #{scheduleState}
     where schedule_no = #{scheduleNo}
   </update>
-
+	
+	<delete id="delete">
+		delete from schedule where schedule_no = #{scheduleNo}
+	</delete>
 
 
 </mapper>

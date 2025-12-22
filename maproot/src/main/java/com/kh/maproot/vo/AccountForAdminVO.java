@@ -17,6 +17,7 @@ public class AccountForAdminVO {
     private String accountEmail;
     private String accountContact;
     private String accountLevel;
+    private String accountBirth;
     
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime accountJoin;

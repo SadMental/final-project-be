@@ -105,8 +105,13 @@ public class ScheduleDao {
         param.put("scheduleState", scheduleState);
         return sqlSession.update("schedule.updateScheduleState", param);
     }
-	
+
+	public boolean delete(Long scheduleNo) {
+		return sqlSession.delete("schedule.delete", scheduleNo) > 0;
+		
 	}
+	
+}
 	
 	
 	

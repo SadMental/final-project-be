@@ -10,9 +10,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.kh.maproot.dao.AccountDao;
 import com.kh.maproot.dto.AccountDto;
+import com.kh.maproot.error.NeedPermissionException;
 import com.kh.maproot.error.TargetAlreadyExistsException;
 import com.kh.maproot.error.TargetNotfoundException;
 import com.kh.maproot.error.UnauthorizationException;
+import com.kh.maproot.vo.TokenVO;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -78,6 +80,28 @@ public class AccountService {
 		}
 		// 4. 회원 정보 삭제 
 		accountDao.delete(accountId);
+		
+		return true;
+	}
+	
+	@Transactional
+	public boolean dropAdmin(String accountId, TokenVO tokenVO) {
+		if(!tokenVO.getLoginLevel().equals("관리자")) throw new NeedPermissionException();
+		
+		// 1. DB에 존재하는 회원정보를 조회
+		AccountDto findtDto = accountDao.selectOne(accountId);
+		if(findtDto == null) throw new TargetNotfoundException();
+		
+		// 3. 회원 프로필 사진 조회
+		try {
+			Long attachmentNo = accountDao.findAttach(findtDto.getAccountId());
+			attachmentService.delete(attachmentNo);
+		}
+		catch (Exception e) {
+			
+		}
+		// 4. 회원 정보 삭제 
+		accountDao.delete(findtDto.getAccountId());
 		
 		return true;
 	}
