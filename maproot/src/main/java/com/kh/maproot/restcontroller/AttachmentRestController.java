@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,9 +31,10 @@ public class AttachmentRestController {
 	@Autowired
 	private AttachmentService attachmentService;
 	
-	@GetMapping("/download")
-	public ResponseEntity<ByteArrayResource> download(@RequestParam Long attachmentNo) throws IOException{
+	@GetMapping("/download/{attachmentNo}")
+	public ResponseEntity<ByteArrayResource> download(@PathVariable Long attachmentNo) throws IOException{
 		// 1. DB에서 정보 조회
+		System.out.println("attachmentNo = " + attachmentNo);
 		AttachmentDto attachmentDto = attachmentDao.selectOne(attachmentNo);
 		if(attachmentDto == null) throw new TargetNotfoundException("존재하지 않는 파일");
 		

@@ -31,7 +31,7 @@ public class InterceptorConfiguration implements WebMvcConfigurer{
                          "/account/withdraw",
                          "/schedule/insert",
                          "/admin/**",
-                         "/account/scheduleLike/**"
+                         "/account/scheduleLike/**",
                          "/account/dropAdmin"
                     )
                     .excludePathPatterns(
