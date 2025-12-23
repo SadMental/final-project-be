@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import com.kh.maproot.dao.PaymentDao;
 import com.kh.maproot.dao.ScheduleDao;
 import com.kh.maproot.dto.PaymentDto;
 import com.kh.maproot.dto.ScheduleDto;
+import com.kh.maproot.service.ScheduleService;
 import com.kh.maproot.vo.AccountComplexSearchVO;
 import com.kh.maproot.vo.AccountForAdminVO;
 import com.kh.maproot.vo.AccountListVO;
@@ -39,6 +41,8 @@ public class AdminRestController {
 	private PaymentDao paymentDao;
 	@Autowired
 	private ScheduleDao scheduleDao;
+	@Autowired
+	private ScheduleService scheduleService;
 	
 	@GetMapping("/account/list/page/{page}")
 	public AccountListVO list(@RequestAttribute TokenVO tokenVO, @PathVariable int page) {
@@ -117,5 +121,10 @@ public class AdminRestController {
 					.last(pageVO.getPage() >= pageVO.getTotalPage())
 					.list(list)
 				.build();
+	}
+	
+	@DeleteMapping("/schedule/delete/{scheduleNo}")
+	public boolean delete(@PathVariable Long scheduleNo, @RequestAttribute TokenVO tokenVO) {
+		return scheduleService.deleteAdmin(scheduleNo, tokenVO);
 	}
 }

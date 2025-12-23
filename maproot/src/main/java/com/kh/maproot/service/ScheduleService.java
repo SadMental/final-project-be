@@ -32,6 +32,7 @@ import com.kh.maproot.dto.kakaomap.KakaoMapDataDto;
 import com.kh.maproot.dto.kakaomap.KakaoMapDaysDto;
 import com.kh.maproot.dto.kakaomap.KakaoMapRoutesDto;
 import com.kh.maproot.error.NeedPermissionException;
+import com.kh.maproot.error.TargetNotfoundException;
 import com.kh.maproot.error.UnauthorizationException;
 import com.kh.maproot.schedule.vo.ScheduleCreateRequestVO;
 import com.kh.maproot.schedule.vo.ScheduleInsertDataWrapperVO;
@@ -286,6 +287,16 @@ public class ScheduleService {
 	public boolean delete(Long scheduleNo, TokenVO tokenVO) {
 		ScheduleDto scheduleDto = scheduleDao.selectByScheduleNo(scheduleNo);
 		if(!scheduleDto.getScheduleOwner().equals(tokenVO.getLoginId())) throw new NeedPermissionException();
+		scheduleRouteDao.deleteByScheduleNo(scheduleNo);
+		scheduleUnitDao.deleteByScheduleNo(scheduleNo);
+		return scheduleDao.delete(scheduleNo);
+	}
+	
+	@Transactional
+	public boolean deleteAdmin(Long scheduleNo, TokenVO tokenVO) {
+		ScheduleDto scheduleDto = scheduleDao.selectByScheduleNo(scheduleNo);
+		if(scheduleDto == null) throw new TargetNotfoundException();
+		if(!tokenVO.getLoginLevel().equals("관리자")) throw new NeedPermissionException();
 		scheduleRouteDao.deleteByScheduleNo(scheduleNo);
 		scheduleUnitDao.deleteByScheduleNo(scheduleNo);
 		return scheduleDao.delete(scheduleNo);

@@ -32,7 +32,12 @@ public class InterceptorConfiguration implements WebMvcConfigurer{
                          "/schedule/insert",
                          "/admin/**",
                          "/account/scheduleLike/**",
+<<<<<<< HEAD
                          "/account/dropAdmin"
+=======
+                         "/account/dropAdmin",
+                         "/account/profile"
+>>>>>>> refs/remotes/origin/main
                     )
                     .excludePathPatterns(
 

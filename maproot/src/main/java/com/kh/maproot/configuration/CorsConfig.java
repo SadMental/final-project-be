@@ -19,10 +19,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class CorsConfig implements WebMvcConfigurer {
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
-		registry.addMapping("/chat/**")
-		.allowedOrigins("http://localhost:5173")
-        .allowedMethods("POST", "OPTIONS")
-        .allowedHeaders("*")
-        .allowCredentials(true);
-	}
+        registry.addMapping("/*") // 모든 경로에 대해
+                 .allowedOrigins("http://localhost:5173/", "http://192.168.20.16:5173") // 특정 IP만 허용할 수도 있지만,
+//                .allowedOriginPatterns("") // 개발 중에는 모든 출처(IP) 허용 (추천)
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // 모든 HTTP 메서드 허용
+                .allowedHeaders("*") // 모든 헤더 허용
+                .allowCredentials(true); // 쿠키/인증 정보 포함 허용
+    }
 }

@@ -255,4 +255,13 @@ public class AccountRestController {
 			@RequestBody AccountDto accountDto) {
 		accountService.dropAdmin(accountDto.getAccountId(), tokenVO);
 	}
+	
+	// 프로필 사진 변경 추가
+	@PostMapping("/profile")
+	public void updateProfile(
+			@RequestAttribute TokenVO tokenVO,
+			@RequestParam(required = false) MultipartFile attach) throws IllegalStateException, IOException {
+		String loginId = tokenVO.getLoginId();
+		accountService.updateProfileImage(loginId, attach);
+	}
 }
