@@ -123,7 +123,7 @@ public class KakaoPayRestController {
 				.itemName(buffer.toString())// 상품명
 				.totalAmount(total)
 				.build();
-
+//		log.debug("requestVO = {}", requestVO);
 		KakaoPayReadyResponseVO responseVO = kakaoPayService.ready(requestVO);
 
 		flashMap.put(

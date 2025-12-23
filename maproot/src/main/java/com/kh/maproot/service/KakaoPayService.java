@@ -44,6 +44,11 @@ public class KakaoPayService {
 		body.put("cancel_url", currentPath + "/cancel/" + requestVO.getPartnerOrderId());
 		body.put("fail_url", currentPath + "/fail/" + requestVO.getPartnerOrderId());
 
+		System.out.println("<body>");
+		for(String name : body.keySet()) {
+			System.out.println("name = " + name + " , value = " + body.get(name));
+		}
+		
 		KakaoPayReadyResponseVO response = webClient.post()
 				.uri("/online/v1/payment/ready")
 				.bodyValue(body)
